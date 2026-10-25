@@ -1,32 +1,40 @@
-# React + TypeScript + Vite
+# Books Store
+Books Store is a responsive online bookstore built with React, TypeScript, HTML, and CSS. The application integrates with a provided REST API to support authentication, product browsing, filtering, shopping cart management, and checkout.
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+## Technologies
+- React
+- TypeScript
+- Vite
+- HTML5 and CSS3
+- React Router
+- React Hook Form
+- Zod
+- REST API
+- Git and GitHub
 
-Currently, two official plugins are available:
+## Features
+- User registration, login, and password recovery
+- Product catalog with search, filters, sorting, and pagination
+- Product details and image gallery
+- Shopping cart and checkout
+- User profile and delivery address management
+- Responsive design for mobile, tablet, and desktop
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## API
+Base URL: https://shop-api-kbe6.onrender.com/api
+API documentation: https://shop-api-kbe6.onrender.com/docs
 
-## React Compiler
+## Getting Started
+1. Clone the repository.
+2. Install dependencies with `npm install`.
+3. Create a local `.env` file and configure the API URL.
+4. Start the development server with `npm run dev`.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Development
+The project uses reusable React components, centralized API communication, TypeScript types, and Git commits to track incremental development.
 
-## Expanding the Oxlint configuration
+## Repository
+GitHub: https://github.com/natia-gobejishvili/books-store.git
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Final Project
+Developed as a final project.
