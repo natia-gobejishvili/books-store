@@ -3,6 +3,10 @@ import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ApiError } from "../../services/api";
+import { authService } from "../../services/authService";
+import { useAuth } from "../../context/AuthContext";
 
 import Button from "../../shared/ui/Button";
 import Input from "../../shared/ui/Input";
@@ -19,11 +23,16 @@ const loginSchema = z.object({
 type LoginValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { refreshUser } = useAuth();
+    const [serverError, setServerError] = useState("");
     const [loading, setLoading] = useState(false);
     
     const {
         register,
         handleSubmit,
+        setError,
         formState: { errors, isSubmitted },
     } = useForm<LoginValues>({
         resolver: zodResolver(loginSchema),
@@ -32,7 +41,7 @@ export default function LoginPage() {
         shouldFocusError: true,
     });
     
-    async function onSubmit(values: LoginValues) {
+    /*async function onSubmit(values: LoginValues) {
         setLoading(true);
         
         try {
@@ -41,7 +50,50 @@ export default function LoginPage() {
         } finally {
             setLoading(false);
         }
+    }*/
+   
+    async function onSubmit(values: LoginValues) {
+        setLoading(true);
+        setServerError("");
+        
+        try {
+            await authService.login(values);
+            await refreshUser();
+            
+            const state = location.state as {
+                from?: { pathname?: string };
+            } | null;
+            
+            navigate(state?.from?.pathname || "/catalog", {
+                replace: true,
+            });
+        } catch (error) {
+            if (error instanceof ApiError) {
+                if (error.code === "INVALID_CREDENTIALS") {
+                    setServerError("არასწორი ელფოსტა ან პაროლი.");
+                } else {
+                    for (const [field, message] of Object.entries(error.fieldErrors)) {
+                        if (field === "email" || field === "password") {
+                            setError(field, { type: "server", message });
+                        }
+                    }
+                    
+                    if (Object.keys(error.fieldErrors).length === 0) {
+                        setServerError(error.message);
+                    }
+                }
+            } else {
+                setServerError(
+                    error instanceof Error
+                    ? error.message
+                    : "შესვლა ვერ მოხერხდა. სცადე თავიდან.",
+                );
+            }
+        } finally {
+            setLoading(false);
+        }
     }
+
     
     return (
         <main className="auth-page">
@@ -66,7 +118,10 @@ export default function LoginPage() {
                         <Alert
                             variant="error"
                             message="გთხოვ, შეამოწმე მონიშნული ველები."
-                        />
+                        />    
+                    )}
+                    {serverError && (
+                        <Alert variant="error" message={serverError} />
                     )}
                     
                     <FormField

@@ -4,6 +4,10 @@ import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigate } from "react-router-dom";
+import { ApiError } from "../../services/api";
+import { authService } from "../../services/authService";
+import { useAuth } from "../../context/AuthContext";
 
 import Button from "../../shared/ui/Button";
 import Input from "../../shared/ui/Input";
@@ -32,11 +36,15 @@ const registerSchema = z.object({
 type RegisterValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
+    const navigate = useNavigate();
+    const { refreshUser } = useAuth();
+    const [serverError, setServerError] = useState("");
     const [loading, setLoading] = useState(false);
     
     const {
         register,
         handleSubmit,
+        setError,
         formState: { errors, isSubmitted },
     } = useForm<RegisterValues>({
         resolver: zodResolver(registerSchema),
@@ -45,13 +53,63 @@ export default function RegisterPage() {
         shouldFocusError: true,
     });
     
-    async function onSubmit(values: RegisterValues) {
+    /*async function onSubmit(values: RegisterValues) {
         setLoading(true);
         
         try {
             await new Promise((resolve) => setTimeout(resolve, 800));
             const { confirmPassword, ...formValues } = values;
             console.log("Register form values:", formValues);
+        } finally {
+            setLoading(false);
+        }
+    }*/
+
+    
+    async function onSubmit(values: RegisterValues) {
+        setLoading(true);
+        setServerError("");
+
+        try {
+            const { confirmPassword, ...payload } = values;
+
+            await authService.register(payload);
+            await refreshUser();
+
+            navigate("/catalog", { replace: true });
+        } catch (error) {
+            if (error instanceof ApiError) {
+                if (error.code === "EMAIL_TAKEN") {
+                    setError("email", {
+                        type: "server",
+                        message: "ეს ელფოსტა უკვე რეგისტრირებულია.",
+                    });
+                } else {
+                    let hasFieldErrors = false;
+                    
+                    for (const [field, message] of Object.entries(error.fieldErrors)) {
+                        if (
+                            field === "name" ||
+                            field === "email" ||
+                            field === "password" ||
+                            field === "confirmPassword"
+                        ) {
+                            setError(field, { type: "server", message });
+                            hasFieldErrors = true;
+                        }
+                    }
+                    
+                    if (!hasFieldErrors) {
+                        setServerError(error.message);
+                    }
+                }
+            } else {
+                setServerError(
+                    error instanceof Error
+                    ? error.message
+                    : "რეგისტრაცია ვერ მოხერხდა. სცადე თავიდან.",
+                );
+            }
         } finally {
             setLoading(false);
         }
@@ -81,6 +139,9 @@ export default function RegisterPage() {
                             variant="error"
                             message="გთხოვ, შეამოწმე მონიშნული ველები."
                         />
+                    )}
+                    {serverError && (
+                        <Alert variant="error" message={serverError} />
                     )}
                     
                     <FormField label="სახელი" htmlFor="register-name" error={errors.name?.message}>
