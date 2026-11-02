@@ -18,9 +18,11 @@ export default function ProductDetailsPage() {
     const [product, setProduct] = useState<ProductDetails | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState("");
+    const [isAddingToCart, setIsAddingToCart] = useState(false);
+    const [cartError, setCartError] = useState("");
 
     const isInCart = product
-        ? items.some((item) => item.product.id === product.id)
+        ? items.some((item) => item.productId === product.id)
         : false;
     
     useEffect(() => {
@@ -60,6 +62,28 @@ export default function ProductDetailsPage() {
             cancelled = true;
         };
     }, [slug]);
+
+    async function handleAddToCart() {
+        if (!product || !product.inStock || isAddingToCart) {
+            return;
+        }
+
+        setIsAddingToCart(true);
+        setCartError("");
+
+        try {
+            await addToCart(product);
+            navigate("/cart");
+        } catch (err) {
+            setCartError(
+                err instanceof Error
+                    ? err.message
+                    : "პროდუქტის კალათაში დამატება ვერ მოხერხდა.",
+            );
+        } finally {
+            setIsAddingToCart(false);
+        }
+    }
     
     if (isLoading) {
         return (
@@ -176,15 +200,14 @@ export default function ProductDetailsPage() {
 
                     <div className="product-details-cart-actions">
                         <Button
-                            onClick={() => {
-                                addToCart(product);
-                                navigate("/cart");
-                            }}
-                            disabled={!product.inStock}
+                            onClick={handleAddToCart}
+                            disabled={!product.inStock || isAddingToCart}
                         >
-                            {product.inStock
-                                ? "კალათაში დამატება"
-                                : "არ არის მარაგში"}
+                            {!product.inStock
+                                ? "არ არის მარაგში"
+                                : isAddingToCart
+                                    ? "ემატება..."
+                                    : "კალათაში დამატება"}
                         </Button>
 
                         {isInCart && (
@@ -196,6 +219,12 @@ export default function ProductDetailsPage() {
                             </Button>
                         )}
                     </div>
+
+                    {cartError && (
+                        <p className="product-details-message" role="alert">
+                            {cartError}
+                        </p>
+                    )}
                     
                     <p
                         className={

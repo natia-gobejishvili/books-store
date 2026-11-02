@@ -1,5 +1,6 @@
 import {
     createContext,
+    useCallback,
     useContext,
     useEffect,
     useMemo,
@@ -7,140 +8,257 @@ import {
     type ReactNode,
 } from "react";
 
+import { useAuth } from "./AuthContext";
+import { cartService } from "../services/cartService";
+import type { CartItem, CartResponse } from "../types/cart";
 import type { Product } from "../types/product";
-
-export type CartItem = {
-    product: Product;
-    quantity: number;
-};
 
 type CartContextType = {
     items: CartItem[];
     totalItems: number;
     totalPrice: number;
-    addToCart: (product: Product) => void;
-    removeFromCart: (productId: string) => void;
-    increaseQuantity: (productId: string) => void;
-    decreaseQuantity: (productId: string) => void;
-    clearCart: () => void;
+    isLoading: boolean;
+    error: string | null;
+    addToCart: (product: Product) => Promise<void>;
+    removeFromCart: (cartItemId: string) => Promise<void>;
+    increaseQuantity: (cartItemId: string) => Promise<void>;
+    decreaseQuantity: (cartItemId: string) => Promise<void>;
+    clearCart: () => Promise<void>;
+    refreshCart: () => Promise<void>;
 };
-
-const CART_STORAGE_KEY = "books-store-cart";
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-function getInitialCart(): CartItem[] {
-    try {
-        const savedCart = localStorage.getItem(CART_STORAGE_KEY);
-
-        if (!savedCart) {
-            return [];
-        }
-
-        const parsed: unknown = JSON.parse(savedCart);
-
-        if (!Array.isArray(parsed)) {
-            return [];
-        }
-
-        return parsed as CartItem[];
-    } catch {
-        return [];
-    }
-}
+const EMPTY_CART: CartResponse = {
+    items: [],
+    totalQty: 0,
+    subtotal: 0,
+    currency: "GEL",
+};
 
 export function CartProvider({ children }: { children: ReactNode }) {
-    const [items, setItems] = useState<CartItem[]>(getInitialCart);
-    
-    useEffect(() => {
-        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
-    }, [items]);
+    const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
 
-    function addToCart(product: Product) {
-        if (!product.inStock) {
+    const [cart, setCart] = useState<CartResponse>(EMPTY_CART);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const refreshCart = useCallback(async () => {
+        if (!isAuthenticated) {
+            setCart(EMPTY_CART);
             return;
         }
 
-        setItems((currentItems) => {
-            const existingItem = currentItems.find(
-                (item) => item.product.id === product.id,
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const response = await cartService.getCart();
+            setCart(response);
+        } catch (err) {
+            setError(
+                err instanceof Error
+                ? err.message
+                : "კალათის ჩატვირთვა ვერ მოხერხდა.",
             );
-            
-            if (existingItem) {
-                return currentItems.map((item) =>
-                    item.product.id === product.id
-                        ? {
-                            ...item,
-                            quantity: Math.min(item.quantity + 1, product.stock),
-                        }
-                        : item,
-                );
+            throw err;
+        } finally {
+            setIsLoading(false);
+        }
+    }, [isAuthenticated]);
+
+    useEffect(() => {
+        if (isAuthLoading) {
+            return;
+        }
+
+        if (!isAuthenticated) {
+            setCart(EMPTY_CART);
+            setError(null);
+            setIsLoading(false);
+            return;
+        }
+
+        let active = true;
+
+        async function loadCart() {
+            setIsLoading(true);
+            setError(null);
+
+            try {
+                const response = await cartService.getCart();
+
+                if (active) {
+                    setCart(response);
+                }
+            } catch (err) {
+                if (active) {
+                    setError(
+                        err instanceof Error
+                        ? err.message
+                        : "კალათის ჩატვირთვა ვერ მოხერხდა.",
+                    );
+                }
+            } finally {
+                if (active) {
+                    setIsLoading(false);
+                }
+            }
+        }
+
+        void loadCart();
+
+        return () => {
+            active = false;
+        };
+    }, [isAuthenticated, isAuthLoading]);
+
+    const addToCart = useCallback(
+        async (product: Product) => {
+            if (!product.inStock) {
+                return;
             }
 
-            return [...currentItems, { product, quantity: 1 }];
-        });
-    }
+            setError(null);
 
-  function removeFromCart(productId: string) {
-        setItems((currentItems) =>
-            currentItems.filter((item) => item.product.id !== productId),
-        );
-    }
+            try {
+                const response = await cartService.addItem({
+                    productId: product.id,
+                    qty: 1,
+                });
 
-    function increaseQuantity(productId: string) {
-        setItems((currentItems) =>
-            currentItems.map((item) =>
-                item.product.id === productId
-                ? {
-                    ...item,
-                    quantity: Math.min(
-                        item.quantity + 1,
-                        item.product.stock,
-                    ),
-                    }
-                : item,
-            ),
-        );
-    }
+                setCart(response);
+            } catch (err) {
+                const message =
+                    err instanceof Error
+                        ? err.message
+                        : "პროდუქტის კალათაში დამატება ვერ მოხერხდა.";
 
-    function decreaseQuantity(productId: string) {
-        setItems((currentItems) =>
-            currentItems
-                .map((item) =>
-                item.product.id === productId
-                    ? { ...item, quantity: item.quantity - 1 }
-                    : item,
-                )
-                .filter((item) => item.quantity > 0),
-        );
-    } 
-
-    function clearCart() {
-        setItems([]);
-    }
-
-    const totalItems = items.reduce(
-        (sum, item) => sum + item.quantity,
-        0,
+                setError(message);
+                throw err;
+            }
+        },
+        [],
     );
 
-    const totalPrice = items.reduce(
-        (sum, item) => sum + item.product.price * item.quantity,
-        0,
+    const removeFromCart = useCallback(async (cartItemId: string) => {
+        setError(null);
+
+        try {
+            const response = await cartService.removeItem(cartItemId);
+            setCart(response);
+        } catch (err) {
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : "პროდუქტის წაშლა ვერ მოხერხდა.",
+            );
+            throw err;
+        }
+    }, []);
+
+    const increaseQuantity = useCallback(
+        async (cartItemId: string) => {
+            const item = cart.items.find((entry) => entry.id === cartItemId);
+
+            if (!item || item.qty >= item.product.stock) {
+                return;
+            }
+
+            setError(null);
+
+            try {
+                const response = await cartService.updateItem(cartItemId, {
+                    qty: item.qty + 1,
+                });
+
+                setCart(response);
+            } catch (err) {
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "რაოდენობის გაზრდა ვერ მოხერხდა.",
+                );
+                throw err;
+            }
+        },
+        [cart.items],
     );
+
+    const decreaseQuantity = useCallback(
+        async (cartItemId: string) => {
+            const item = cart.items.find((entry) => entry.id === cartItemId);
+
+            if (!item) {
+                return;
+            }
+
+            if (item.qty <= 1) {
+                await removeFromCart(cartItemId);
+                return;
+            }
+
+            setError(null);
+
+            try {
+                const response = await cartService.updateItem(cartItemId, {
+                    qty: item.qty - 1,
+                });
+
+                setCart(response);
+            } catch (err) {
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "რაოდენობის შემცირება ვერ მოხერხდა.",
+                );
+                throw err;
+            }
+        },
+        [cart.items, removeFromCart],
+    );
+
+    const clearCart = useCallback(async () => {
+        setError(null);
+
+        try {
+            const response = await cartService.clearCart();
+            setCart(response);
+        } catch (err) {
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : "კალათის გასუფთავება ვერ მოხერხდა.",
+            );
+            throw err;
+        }
+    }, []);
 
     const value = useMemo(
         () => ({
-            items,
-            totalItems,
-            totalPrice,
+            items: cart.items,
+            totalItems: cart.totalQty,
+            totalPrice: cart.subtotal,
+            isLoading,
+            error,
             addToCart,
             removeFromCart,
             increaseQuantity,
             decreaseQuantity,
             clearCart,
+            refreshCart,
         }),
-        [items, totalItems, totalPrice],
+        [
+            cart,
+            isLoading,
+            error,
+            addToCart,
+            removeFromCart,
+            increaseQuantity,
+            decreaseQuantity,
+            clearCart,
+            refreshCart,
+        ],
     );
 
     return (
