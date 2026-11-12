@@ -59,7 +59,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             setError(
                 err instanceof Error
                 ? err.message
-                : "კალათის ჩატვირთვა ვერ მოხერხდა.",
+                : "კალათის მონაცემების ჩატვირთვა ვერ მოხერხდა.",
             );
             throw err;
         } finally {
@@ -96,7 +96,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                     setError(
                         err instanceof Error
                         ? err.message
-                        : "კალათის ჩატვირთვა ვერ მოხერხდა.",
+                        : "კალათის მონაცემების ჩატვირთვა ვერ მოხერხდა.",
                     );
                 }
             } finally {

@@ -1,8 +1,5 @@
 import { apiRequest } from "./api";
-import type {
-    OrdersResponse,
-    OrderResponse,
-} from "../types/order";
+import type { OrdersResponse, OrderResponse, } from "../types/order";
 
 export const orderService = {
     getOrders() {

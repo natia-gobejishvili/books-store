@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { useCart } from "../context/CartContext";
 import Button from "../shared/ui/Button";
@@ -8,6 +9,9 @@ import "../styles/cart.css";
 
 export default function CartPage() {
     const navigate = useNavigate();
+    const { t, i18n } = useTranslation();
+
+    const locale = i18n.language.startsWith("en") ? "en-US" : "ka-GE";
 
     const {
         items,
@@ -36,37 +40,45 @@ export default function CartPage() {
     }
 
     const formatPrice = (price: number) =>
-        `${price.toLocaleString("ka-GE")} ₾`;
+        `${price.toLocaleString(locale)} ₾`;
 
     return (
         <main className="cart-page">
             <header className="cart-header">
                 <div>
-                    <span className="auth-eyebrow">BOOKS STORE</span>
-                    <h1>ჩემი კალათა</h1>
-                    <p>კალათაში დამატებული წიგნები: {totalItems}</p>
+                    <h1>{t("cart.title")}</h1>
+                    <p>
+                        {t("cart.itemsCount", { count: totalItems })}
+                    </p>
                 </div>
 
-                <Button variant="secondary" onClick={() => navigate("/catalog")}>
-                    ← კატალოგში დაბრუნება
+                <Button
+                    variant="secondary"
+                    onClick={() => navigate("/catalog")}
+                >
+                    ← {t("cart.backToCatalog")}
                 </Button>
             </header>
 
             {isLoading ? (
                 <section className="cart-empty">
-                    <p>კალათა იტვირთება...</p>
+                    <p>{t("cart.loading")}</p>
                 </section>
             ) : error ? (
                 <section className="cart-empty">
-                    <h2>შეცდომა</h2>
+                    <h2>{t("cart.errorTitle")}</h2>
                     <p>{error}</p>
-                    <Button onClick={() => window.location.reload()}>თავიდან ცდა</Button>
+                    <Button onClick={() => window.location.reload()}>
+                        {t("cart.retry")}
+                    </Button>
                 </section>
             ) : items.length === 0 ? (
                 <section className="cart-empty">
-                    <h2>თქვენი კალათა ცარიელია</h2>
-                    <p>შეარჩიე სასურველი წიგნები კატალოგიდან.</p>
-                    <Button onClick={() => navigate("/catalog")}>წიგნების დათვალიერება</Button>
+                    <h2>{t("cart.emptyTitle")}</h2>
+                    <p>{t("cart.emptyDescription")}</p>
+                    <Button onClick={() => navigate("/catalog")}>
+                        {t("cart.browseBooks")}
+                    </Button>
                 </section>
             ) : (
                 <>
@@ -84,9 +96,11 @@ export default function CartPage() {
 
                                     <div className="cart-item__info">
                                         <h2>{product.title}</h2>
-                                        <p>{product.brand}</p>
+                                        {product.brand && <p>{product.brand}</p>}
 
-                                        <strong>{formatPrice(product.price)}</strong>
+                                        <strong>
+                                            {formatPrice(product.price)}
+                                        </strong>
                                     </div>
 
                                     <div className="cart-item__quantity">
@@ -94,11 +108,11 @@ export default function CartPage() {
                                             type="button"
                                             onClick={() =>
                                                 void handleCartAction(() =>
-                                                decreaseQuantity(item.id),
+                                                    decreaseQuantity(item.id),
                                                 )
                                             }
                                             disabled={isUpdating}
-                                            aria-label="რაოდენობის შემცირება"
+                                            aria-label={t("cart.decreaseQuantity")}
                                         >
                                             -
                                         </button>
@@ -113,16 +127,19 @@ export default function CartPage() {
                                                 )
                                             }
                                             disabled={
-                                                isUpdating || item.qty >= product.stock
+                                                isUpdating ||
+                                                item.qty >= product.stock
                                             }
-                                            aria-label="რაოდენობის გაზრდა"
+                                            aria-label={t("cart.increaseQuantity")}
                                         >
                                             +
                                         </button>
                                     </div>
 
                                     <div className="cart-item__subtotal">
-                                        <strong>{formatPrice(item.lineTotal)}</strong>
+                                        <strong>
+                                            {formatPrice(item.lineTotal)}
+                                        </strong>
 
                                         <button
                                             type="button"
@@ -134,7 +151,7 @@ export default function CartPage() {
                                             }
                                             disabled={isUpdating}
                                         >
-                                            წაშლა
+                                            {t("cart.remove")}
                                         </button>
                                     </div>
                                 </article>
@@ -144,12 +161,12 @@ export default function CartPage() {
 
                     <section className="cart-summary">
                         <div>
-                            <span>სულ პროდუქტი:</span>
+                            <span>{t("cart.totalProducts")}:</span>
                             <strong>{totalItems}</strong>
                         </div>
 
                         <div className="cart-summary__total">
-                            <span>ჯამური ღირებულება:</span>
+                            <span>{t("cart.totalPrice")}:</span>
                             <strong>{formatPrice(totalPrice)}</strong>
                         </div>
 
@@ -161,14 +178,14 @@ export default function CartPage() {
                                 }
                                 disabled={isUpdating}
                             >
-                                კალათის გასუფთავება
+                                {t("cart.clearCart")}
                             </Button>
 
                             <Button
                                 onClick={() => navigate("/checkout")}
                                 disabled={isUpdating || items.length === 0}
                             >
-                                შეკვეთის გაფორმება
+                                {t("cart.checkout")}
                             </Button>
                         </div>
                     </section>

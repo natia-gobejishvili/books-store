@@ -1,11 +1,49 @@
 <!doctype html>
-<html lang="en">
+<html lang="ka">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>books-store</title>
+    <meta name="theme-color" content="#f7f7fb" />
+
+    <script>
+      (function () {
+        try {
+          const savedTheme = localStorage.getItem("theme");
+
+          const themeMode = ["light", "dark", "system"].includes(savedTheme)
+            ? savedTheme
+            : "system";
+
+          const systemDark = window.matchMedia(
+            "(prefers-color-scheme: dark)"
+          ).matches;
+
+          const actualTheme =
+            themeMode === "system"
+              ? systemDark
+                ? "dark"
+                : "light"
+              : themeMode;
+
+          document.documentElement.setAttribute("data-theme", actualTheme);
+          document.documentElement.setAttribute("data-theme-mode", themeMode);
+
+          document
+            .querySelector('meta[name="theme-color"]')
+            ?.setAttribute(
+              "content",
+              actualTheme === "dark" ? "#11121a" : "#f7f7fb"
+            );
+        } catch {
+          document.documentElement.setAttribute("data-theme", "light");
+        }
+      })();
+    </script>
+
+    <title>Books Store</title>
   </head>
+
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

@@ -1,0 +1,369 @@
+.home-page {
+    width: 100%;
+    overflow: hidden;
+    background: var(--color-background);
+    color: var(--color-text);
+}
+
+.home-hero {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: center;
+    gap: 48px;
+    width: min(1200px, calc(100% - 48px));
+    min-height: 530px;
+    margin: 0 auto;
+    padding: 64px 0;
+}
+
+.home-hero__content {
+    max-width: 620px;
+}
+
+.home-eyebrow,
+.home-section-eyebrow {
+    display: inline-block;
+    color: var(--color-primary);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.home-hero h1 {
+    margin: 22px 0 20px;
+    color: var(--color-text);
+    font-size: clamp(42px, 5vw, 64px);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -2px;
+}
+
+.home-hero__content > p {
+    max-width: 520px;
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 16px;
+    line-height: 1.9;
+}
+
+.home-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 30px;
+}
+
+.home-hero__note {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 30px;
+    color: var(--color-muted);
+    font-size: 13px;
+}
+
+.home-hero__note span {
+    color: var(--color-primary);
+    font-size: 19px;
+}
+
+.home-visual-caption {
+    position: absolute;
+    right: 24px;
+    bottom: 22px;
+    z-index: 4;
+    display: grid;
+    gap: 4px;
+    color: var(--color-text);
+    text-align: right;
+}
+
+.home-visual-caption span {
+    font-size: 12px;
+}
+
+.home-visual-caption strong {
+    font-size: 18px;
+}
+
+.home-benefits {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+    width: min(1200px, calc(100% - 48px));
+    margin: 0 auto;
+    padding: 30px 0;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.home-benefit {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.home-benefit__icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    background: var(--color-surface-secondary);
+    border-radius: 14px;
+    font-size: 22px;
+}
+
+.home-benefit h3 {
+    margin: 0 0 6px;
+    color: var(--color-text);
+    font-size: 14px;
+}
+
+.home-benefit p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.home-popular {
+    width: min(1200px, calc(100% - 48px));
+    margin: 0 auto;
+    padding: 76px 0;
+}
+
+.home-section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 30px;
+}
+
+.home-section-heading h2,
+.home-cta h2 {
+    margin: 10px 0;
+    color: var(--color-text);
+    font-size: 32px;
+    letter-spacing: -0.8px;
+}
+
+.home-section-heading p,
+.home-cta p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.home-product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 22px;
+    align-items: stretch;
+}
+
+.home-product-grid .product-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.home-product-grid .product-card__image-wrap {
+    position: relative;
+    width: 100%;
+    height: 260px;
+    min-width: 0;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.home-product-grid .product-card__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.home-product-grid .product-card__content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.home-product-grid .product-card__title {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+
+.home-product-grid .product-card__button {
+    width: 100%;
+    margin-top: auto;
+}
+
+.home-message {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    min-height: 150px;
+    padding: 24px;
+    color: var(--color-muted);
+    background: var(--color-surface-secondary);
+    border-radius: 14px;
+    text-align: center;
+}
+
+.home-message--error {
+    color: var(--color-error);
+    background: var(--color-error-bg);
+}
+
+.home-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    width: min(1200px, calc(100% - 48px));
+    margin: 0 auto 70px;
+    padding: 42px;
+    background: var(--color-surface-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 22px;
+}
+
+.home-cta > div {
+    max-width: 680px;
+}
+
+.home-cta h2 {
+    font-size: 27px;
+}
+
+.home-hero_visual {
+    width: 100%;
+    max-width: 560px;
+    height: 420px;
+    overflow: hidden;
+    border-radius: 20px;
+}
+
+.home-hero_image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+@media (max-width: 900px) {
+    .home-hero {
+        grid-template-columns: 1fr 0.8fr;
+        gap: 28px;
+    }
+
+    .home-benefits {
+        gap: 18px;
+    }
+
+    .home-product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .home-product-grid .product-card__image-wrap {
+        height: 230px;
+    }
+}
+
+@media (max-width: 520px) {
+    .home-product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .home-product-grid .product-card__image-wrap {
+        height: 170px;
+    }
+
+    .home-product-grid .product-card__content {
+        padding: 12px;
+    }
+
+    .home-product-grid .product-card__title {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 360px) {
+    .home-product-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .home-product-grid .product-card__image-wrap {
+        height: 240px;
+    }
+}
+
+@media (max-width: 650px) {
+    .home-hero {
+        grid-template-columns: 1fr;
+        gap: 34px;
+        padding: 46px 0;
+    }
+
+    .home-hero h1 {
+        font-size: clamp(38px, 10vw, 52px);
+    }
+
+    .home-benefits {
+        grid-template-columns: 1fr;
+        gap: 22px;
+        padding: 28px 0;
+    }
+
+    .home-section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .home-section-heading h2 {
+        font-size: 27px;
+    }
+
+    .home-popular {
+        padding: 54px 0;
+    }
+
+    .home-cta {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 28px 22px;
+    }
+
+    .home-cta h2 {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 420px) {
+    .home-hero,
+    .home-benefits,
+    .home-popular,
+    .home-cta {
+        width: calc(100% - 32px);
+    }
+
+    .home-product-grid {
+        grid-template-columns: 1fr;
+    }
+}

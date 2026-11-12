@@ -1,0 +1,91 @@
+.profile-page {
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 24px 64px;
+    color: var(--color-text);
+}
+
+.profile-card {
+    padding: 36px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    color: var(--color-text);
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.profile-heading {
+    margin-bottom: 32px;
+}
+
+.profile-eyebrow {
+    display: inline-block;
+    margin-bottom: 14px;
+    color: var(--color-primary);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.profile-heading h1 {
+    margin: 0 0 10px;
+    color: var(--color-text);
+    font-size: 32px;
+    letter-spacing: -0.8px;
+}
+
+.profile-heading p,
+.profile-hint {
+    color: var(--color-muted);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.profile-heading p {
+    margin: 0;
+}
+
+.profile-form {
+    display: grid;
+    gap: 28px;
+}
+
+.profile-section {
+    display: grid;
+    gap: 18px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.profile-section h2 {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 18px;
+}
+
+.profile-hint {
+    margin: -10px 0 0;
+}
+
+.profile-submit {
+    margin-top: 2px;
+}
+
+@media (max-width: 600px) {
+    .profile-page {
+        padding: 28px 16px 40px;
+    }
+
+    .profile-card {
+        padding: 24px 20px;
+    }
+
+    .profile-heading h1 {
+        font-size: 27px;
+    }
+}

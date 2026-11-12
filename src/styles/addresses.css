@@ -1,8 +1,8 @@
 .addresses-page {
     min-height: 100vh;
     padding: 40px 24px 70px;
-    background: #f7f8fc;
-    color: #252b3b;
+    background: var(--color-background);
+    color: var(--color-text);
 }
 
 .addresses-container {
@@ -54,9 +54,9 @@
 .saved-addresses-section {
     margin-bottom: 30px;
     padding: 28px;
-    border: 1px solid #e9ebf2;
+    border: 1px solid var(--color-border);
     border-radius: 14px;
-    background: #ffffff;
+    background: var(--color-surface);
     box-shadow: 0 4px 18px rgba(30, 40, 80, 0.04);
 }
 
@@ -104,8 +104,8 @@
     border: 1px solid #dfe2eb;
     border-radius: 8px;
     outline: none;
-    background: #ffffff;
-    color: #252b3b;
+    background: var(--color-surface);
+    color: var(--color-text);
     font: inherit;
     font-size: 14px;
     transition: border-color 0.2s, box-shadow 0.2s;
@@ -173,7 +173,7 @@
 
 .address-cancel-button {
     border: 1px solid #dfe2eb;
-    background: #ffffff;
+    background: var(--color-surface);
     color: #51586a;
 }
 
@@ -243,7 +243,7 @@
     padding: 20px;
     border: 1px solid #e6e8f0;
     border-radius: 11px;
-    background: #ffffff;
+    background: var(--color-surface);
 }
 
 .address-card-top {
@@ -301,7 +301,7 @@
     padding: 7px 10px;
     border: 1px solid #e0e3ed;
     border-radius: 6px;
-    background: #ffffff;
+    background: var(--color-surface);
     color: #5969ca;
     font: inherit;
     font-size: 12px;
@@ -323,23 +323,45 @@
     background: #fff1f1;
 }
 
+@media (max-width: 1024px) {
+    .addresses-page {
+        padding: 32px 20px 56px;
+    }
+
+    .addresses-container {
+        max-width: 900px;
+    }
+
+    .address-form-section,
+    .saved-addresses-section {
+        padding: 24px;
+    }
+
+    .addresses-list {
+        gap: 14px;
+    }
+}
+
 @media (max-width: 700px) {
     .addresses-page {
-        padding: 28px 16px 50px;
+        padding: 26px 16px 44px;
     }
 
     .addresses-header {
         align-items: flex-start;
         flex-direction: column;
+        gap: 14px;
+        margin-bottom: 24px;
     }
 
     .addresses-header h1 {
-        font-size: 25px;
+        font-size: 26px;
     }
 
     .address-form-section,
     .saved-addresses-section {
         padding: 20px 16px;
+        margin-bottom: 20px;
     }
 
     .address-form-grid,
@@ -352,14 +374,37 @@
     }
 
     .section-heading h2 {
-        font-size: 17px;
+        font-size: 18px;
+    }
+
+    .address-card {
+        padding: 17px;
     }
 }
 
 @media (max-width: 420px) {
+    .addresses-page {
+        padding: 22px 12px 36px;
+    }
+
+    .addresses-header h1 {
+        font-size: 23px;
+    }
+
+    .addresses-description {
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .address-form-section,
+    .saved-addresses-section {
+        padding: 18px 13px;
+    }
+
     .section-heading {
         align-items: flex-start;
         flex-direction: column;
+        gap: 8px;
     }
 
     .address-form-actions {
@@ -368,5 +413,13 @@
 
     .address-form-actions button {
         width: 100%;
+    }
+
+    .address-card-top {
+        flex-direction: column;
+    }
+
+    .address-card-actions button {
+        flex: 1 1 auto;
     }
 }

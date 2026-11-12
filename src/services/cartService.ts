@@ -1,10 +1,5 @@
 import { apiRequest } from "./api";
-
-import type {
-    AddCartItemRequest,
-    CartResponse,
-    UpdateCartItemRequest,
-} from "../types/cart";
+import type { AddCartItemRequest, CartResponse, UpdateCartItemRequest, } from "../types/cart";
 
 export const cartService = {
     getCart() {

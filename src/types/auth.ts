@@ -23,3 +23,10 @@ export type RegisterPayload = {
 export type MeResponse = {
     user: User;
 };
+
+export type UpdateProfilePayload = {
+    currentPassword: string;
+    name?: string;
+    email?: string;
+    newPassword?: string;
+};

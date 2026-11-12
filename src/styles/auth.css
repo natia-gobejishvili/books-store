@@ -13,18 +13,6 @@
     max-width: 540px;
 }
 
-.auth-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    color: var(--color-primary);
-    background: #eeedff;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 700;
-}
-
 .auth-intro h1 {
     margin: 24px 0 16px;
     font-size: clamp(36px, 5vw, 58px);
@@ -304,57 +292,119 @@
     font-size: 25px;
 }
 
+.auth-benefits li {
+    color: var(--color-text);
+}
+
+.benefit-icon {
+    background: var(--color-surface-secondary);
+}
+
+.auth-card {
+    border-color: var(--color-border);
+}
+
+.ui-input {
+    color: var(--color-text);
+    background: var(--color-surface);
+}
+
+.ui-input::placeholder {
+    color: var(--color-muted);
+}
+
+.ui-input:hover {
+    border-color: var(--color-primary);
+}
+
+.ui-button--secondary {
+    color: var(--color-primary);
+    background: var(--color-surface-secondary);
+}
+
+.ui-button--secondary:hover:not(:disabled) {
+    background: var(--color-border);
+}
+
+.auth-footer {
+    border-color: var(--color-border);
+}
+
+.success-icon {
+    background: var(--color-success-bg);
+}
+
+@media (max-width: 900px) {
+    .auth-page {
+        grid-template-columns: minmax(0, 1fr) minmax(300px, 420px);
+        gap: 32px;
+        padding: 40px 24px;
+    }
+
+    .auth-intro h1 {
+        font-size: clamp(32px, 4vw, 44px);
+    }
+
+    .auth-card {
+        padding: 28px;
+    }
+}
 
 @media (max-width: 800px) {
     .auth-page {
         grid-template-columns: 1fr;
-        gap: 32px;
+        gap: 28px;
         max-width: 560px;
-        padding: 32px 24px;
+        padding: 32px 20px;
     }
-    
+
     .auth-intro {
-        max-width: none;
+        max-width: 100%;
     }
-    
+
     .auth-intro h1 {
-        margin-top: 18px;
-        font-size: clamp(32px, 7vw, 44px);
+        font-size: clamp(30px, 7vw, 42px);
     }
-    
-    .auth-benefits {
-        grid-template-columns: 1fr;
-        gap: 12px;
-        margin-top: 20px;
+
+    .auth-card {
+        padding: 28px 24px;
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 420px) {
     .auth-page {
-        gap: 24px;
-        padding: 24px 16px;
+        gap: 22px;
+        padding: 24px 14px;
     }
-    
-    .auth-card {
-        padding: 24px 20px;
-        border-radius: 16px;
+
+    .auth-intro h1 {
+        font-size: 30px;
+        letter-spacing: -1px;
     }
-    
-    .auth-card__heading {
-        font-size: 26px;
-    }
-    
+
     .auth-intro > p {
         font-size: 14px;
     }
-    
-    .auth-benefits {
-        font-size: 13px;
+
+    .auth-card {
+        padding: 22px 17px;
     }
-    
+
+    .auth-card__heading {
+        font-size: 25px;
+    }
+
+    .auth-form {
+        gap: 16px;
+    }
+
+    .ui-button {
+        width: 100%;
+    }
+
     .auth-links {
-        align-items: flex-start;
         flex-direction: column;
+        align-items: flex-start;
     }
 }
 

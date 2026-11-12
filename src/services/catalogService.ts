@@ -1,13 +1,5 @@
-
 import { apiRequest } from "./api";
-
-import type {
-    CategoriesResponse,
-    CategoryDetails,
-    ProductDetails,
-    ProductQuery,
-    ProductsResponse,
-} from "../types/product";
+import type { CategoriesResponse, CategoryDetails, ProductDetails, ProductQuery, ProductsResponse, } from "../types/product";
 
 
 export const catalogService = {

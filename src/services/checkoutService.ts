@@ -1,11 +1,5 @@
 import { apiRequest } from "./api";
-
-import type {
-    CheckoutResponse,
-    CreateOrderRequest,
-    CreateOrderResponse,
-    ConfirmOrderRequest,
-} from "../types/checkout";
+import type { CheckoutResponse, CreateOrderRequest, CreateOrderResponse, ConfirmOrderRequest } from "../types/checkout";
 
 export const checkoutService = {
     getCheckout() {

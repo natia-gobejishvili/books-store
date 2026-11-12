@@ -1,10 +1,5 @@
 import { apiRequest } from "./api";
-
-import type {
-    AddressRequest,
-    AddressResponse,
-    AddressesResponse,
-} from "../types/address";
+import type {AddressRequest, AddressResponse, AddressesResponse, } from "../types/address";
 
 export const addressService = {
     getAddresses() {

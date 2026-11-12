@@ -1,15 +1,20 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { catalogService } from "../services/catalogService";
+
 import type {
     Product,
     ProductCategory,
     ProductQuery,
 } from "../types/product";
+
 import ProductCard from "../components/ProductCard";
 import Button from "../shared/ui/Button";
+import CustomSelect from "../components/CustomSelect";
 
 import "../styles/catalog.css";
 
@@ -19,26 +24,35 @@ export default function CatalogPage() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const { totalItems } = useCart();
+    const { t, i18n } = useTranslation();
+
+    const isEnglish = i18n.resolvedLanguage === "en";
+
     const [categories, setCategories] = useState<ProductCategory[]>([]);
     const [products, setProducts] = useState<Product[]>([]);
     const [total, setTotal] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
+
     const [category, setCategory] = useState("books");
     const [searchInput, setSearchInput] = useState("");
     const [search, setSearch] = useState("");
+
     const [minPrice, setMinPrice] = useState("");
     const [maxPrice, setMaxPrice] = useState("");
     const [minRating, setMinRating] = useState("");
+
     const [inStock, setInStock] = useState(false);
     const [onSale, setOnSale] = useState(false);
+
     const [sort, setSort] = useState("newest");
     const [page, setPage] = useState(1);
+
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState("");
-    
+
     useEffect(() => {
         let cancelled = false;
-        
+
         catalogService
             .getCategories()
             .then((response) => {
@@ -48,22 +62,22 @@ export default function CatalogPage() {
             })
             .catch(() => {
                 if (!cancelled) {
-                    setError("კატეგორიების ჩატვირთვა ვერ მოხერხდა.");
+                    setError("catalog.loadCategoriesError");
                 }
             });
-            
+
         return () => {
             cancelled = true;
         };
     }, []);
-    
+
     useEffect(() => {
         let cancelled = false;
-        
+
         async function loadProducts() {
             setIsLoading(true);
             setError("");
-            
+
             const filters: ProductQuery = {
                 category,
                 q: search || undefined,
@@ -76,9 +90,10 @@ export default function CatalogPage() {
                 page,
                 limit: PAGE_SIZE,
             };
-            
+
             try {
                 const response = await catalogService.getProducts(filters);
+
                 if (!cancelled) {
                     setProducts(response.items);
                     setTotal(response.total);
@@ -89,9 +104,7 @@ export default function CatalogPage() {
                     setProducts([]);
                     setTotal(0);
                     setTotalPages(1);
-                    setError(
-                        "პროდუქტების ჩატვირთვა ვერ მოხერხდა. გთხოვ, სცადე თავიდან.",
-                    );
+                    setError("catalog.loadProductsError");
                 }
             } finally {
                 if (!cancelled) {
@@ -99,8 +112,9 @@ export default function CatalogPage() {
                 }
             }
         }
-        
+
         void loadProducts();
+
         return () => {
             cancelled = true;
         };
@@ -115,13 +129,13 @@ export default function CatalogPage() {
         sort,
         page,
     ]);
-    
+
     function handleSearch(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
         setPage(1);
         setSearch(searchInput.trim());
     }
-    
+
     function resetFilters() {
         setCategory("books");
         setSearchInput("");
@@ -134,7 +148,7 @@ export default function CatalogPage() {
         setSort("newest");
         setPage(1);
     }
-    
+
     function handleViewDetails(slug: string) {
         navigate(`/products/${encodeURIComponent(slug)}`);
     }
@@ -142,79 +156,125 @@ export default function CatalogPage() {
     return (
         <main className="catalog-page">
             <header className="catalog-header">
-                <span className="auth-eyebrow">BOOKS STORE</span>
-                <h1>წიგნების სამყარო</h1>
-                <p>გამარჯობა, {user?.name || user?.email || "მკითხველო"}!
-                    აღმოაჩინე საინტერესო წიგნები და შეარჩიე შენთვის სასურველი.
+                <h1>{t("catalog.title")}</h1>
+
+                <p>
+                    {t("catalog.greeting", {
+                        name: user?.name || user?.email || t("catalog.reader"),
+                    })}
                 </p>
-                
+
                 <div className="catalog-header-actions">
-                    <Button variant="secondary" onClick={() => navigate("/cart")}>
-                        კალათა ({totalItems})
+                    <Button
+                        variant="secondary"
+                        onClick={() => navigate("/cart")}
+                    >
+                        {t("catalog.cart")} ({totalItems})
                     </Button>
 
-                    <Button onClick={logout}>გამოსვლა</Button>
+                    <Button onClick={logout}>
+                        {t("catalog.logout")}
+                    </Button>
                 </div>
             </header>
-            
+
             <form onSubmit={handleSearch}>
                 <div className="catalog-toolbar">
                     <div className="catalog-field">
-                        <label htmlFor="catalog-search">წიგნის ძიება</label>
+                        <label htmlFor="catalog-search">
+                            {t("catalog.searchLabel")}
+                        </label>
+
                         <input
                             id="catalog-search"
                             type="search"
-                            placeholder="შეიყვანე წიგნის სათაური..."
+                            placeholder={t("catalog.searchPlaceholder")}
                             value={searchInput}
-                            onChange={(event) => setSearchInput(event.target.value)}
+                            onChange={(event) =>
+                                setSearchInput(event.target.value)
+                            }
                         />
                     </div>
                     
                     <div className="catalog-field">
-                        <label htmlFor="catalog-category">კატეგორია</label>
-                        <select
+                        <label htmlFor="catalog-category">
+                            {t("catalog.category")}
+                        </label>
+
+                        <CustomSelect
                             id="catalog-category"
                             value={category}
-                            onChange={(event) => {
-                                setCategory(event.target.value);
+                            onChange={(value) => {
+                                setCategory(value);
                                 setPage(1);
                             }}
-                        >
-                            <option value="">ყველა კატეგორია</option>
-                            {categories.map((item) => (
-                                <option key={item.id} value={item.slug}>
-                                    {item.name}
-                                </option>
-                            ))}
-                        </select>
+                            options={[
+                                {
+                                    value: "",
+                                    label: t("catalog.allCategories"),
+                                },
+                                ...categories.map((item) => ({
+                                    value: item.slug,
+                                    label: isEnglish
+                                        ? item.nameEn || item.name
+                                        : item.name,
+                                })),
+                            ]}
+                        />
                     </div>
                     
                     <div className="catalog-field">
-                        <label htmlFor="catalog-sort">დახარისხება</label>
-                        <select
+                        <label htmlFor="catalog-sort">
+                            {t("catalog.sort")}
+                        </label>
+
+                        <CustomSelect
                             id="catalog-sort"
                             value={sort}
-                            onChange={(event) => {
-                                setSort(event.target.value);
+                            onChange={(value) => {
+                                setSort(value);
                                 setPage(1);
                             }}
-                        >
-                            <option value="newest">უახლესი</option>
-                            <option value="price-asc">ფასი: ზრდადობით</option>
-                            <option value="price-desc">ფასი: კლებადობით</option>
-                            <option value="rating-desc">რეიტინგი</option>
-                            <option value="popular">პოპულარული</option>
-                            <option value="title-asc">სათაური: A–Z</option>
-                        </select>
+                            options={[
+                                {
+                                    value: "newest",
+                                    label: t("catalog.newest"),
+                                },
+                                {
+                                    value: "price-asc",
+                                    label: t("catalog.priceAsc"),
+                                },
+                                {
+                                    value: "price-desc",
+                                    label: t("catalog.priceDesc"),
+                                },
+                                {
+                                    value: "rating-desc",
+                                    label: t("catalog.rating"),
+                                },
+                                {
+                                    value: "popular",
+                                    label: t("catalog.popular"),
+                                },
+                                {
+                                    value: "title-asc",
+                                    label: t("catalog.titleAsc"),
+                                },
+                            ]}
+                        />
                     </div>
-                    
+
+
                     <div className="catalog-field">
-                        <label htmlFor="catalog-min-price">მინ. ფასი (₾)</label>
+                        <label htmlFor="catalog-min-price">
+                            {t("catalog.minPrice")}
+                        </label>
+
                         <input
                             id="catalog-min-price"
                             type="number"
                             min="0"
-                            placeholder="მაგ. 10"
+                            placeholder={t("catalog.priceExample")}
                             value={minPrice}
                             onChange={(event) => {
                                 setMinPrice(event.target.value);
@@ -222,14 +282,17 @@ export default function CatalogPage() {
                             }}
                         />
                     </div>
-                    
+
                     <div className="catalog-field">
-                        <label htmlFor="catalog-max-price">მაქს. ფასი (₾)</label>
+                        <label htmlFor="catalog-max-price">
+                            {t("catalog.maxPrice")}
+                        </label>
+
                         <input
                             id="catalog-max-price"
                             type="number"
                             min="0"
-                            placeholder="მაგ. 100"
+                            placeholder={t("catalog.priceExample")}
                             value={maxPrice}
                             onChange={(event) => {
                                 setMaxPrice(event.target.value);
@@ -239,31 +302,50 @@ export default function CatalogPage() {
                     </div>
                     
                     <div className="catalog-field">
-                        <label htmlFor="catalog-rating">მინ. რეიტინგი</label>
-                        <select
+                        <label htmlFor="catalog-rating">
+                            {t("catalog.minRating")}
+                        </label>
+
+                        <CustomSelect
                             id="catalog-rating"
                             value={minRating}
-                            onChange={(event) => {
-                                setMinRating(event.target.value);
+                            onChange={(value) => {
+                                setMinRating(value);
                                 setPage(1);
                             }}
-                        >
-                            <option value="">ყველა რეიტინგი</option>
-                            <option value="3">3+ ვარსკვლავი</option>
-                            <option value="4">4+ ვარსკვლავი</option>
-                            <option value="4.5">4.5+ ვარსკვლავი</option>
-                        </select>
+                            options={[
+                                {
+                                    value: "",
+                                    label: t("catalog.allRatings"),
+                                },
+                                {
+                                    value: "3",
+                                    label: t("catalog.stars3"),
+                                },
+                                {
+                                    value: "4",
+                                    label: t("catalog.stars4"),
+                                },
+                                {
+                                    value: "4.5",
+                                    label: t("catalog.stars45"),
+                                },
+                            ]}
+                        />
                     </div>
                 </div>
-                
+
                 <div className="catalog-actions">
-                    <Button type="submit">ძიება</Button>
+                    <Button type="submit">
+                        {t("catalog.search")}
+                    </Button>
+
                     <Button type="button" onClick={resetFilters}>
-                        ფილტრების გასუფთავება
+                        {t("catalog.clearFilters")}
                     </Button>
                 </div>
             </form>
-            
+
             <div className="catalog-checks">
                 <label>
                     <input
@@ -274,9 +356,10 @@ export default function CatalogPage() {
                             setPage(1);
                         }}
                     />
-                    მხოლოდ მარაგში არსებული
+
+                    {t("catalog.inStock")}
                 </label>
-                
+
                 <label>
                     <input
                         type="checkbox"
@@ -286,46 +369,51 @@ export default function CatalogPage() {
                             setPage(1);
                         }}
                     />
-                    მხოლოდ ფასდაკლებული
+
+                    {t("catalog.onSale")}
                 </label>
             </div>
-            
+
             <p className="catalog-results">
                 {isLoading
-                    ? "პროდუქტები იტვირთება..."
-                    : `ნაპოვნია ${total} პროდუქტი`}
+                    ? t("catalog.loading")
+                    : t("catalog.results", { count: total })}
             </p>
-            
+
             {error && (
                 <div className="catalog-message" role="alert">
-                    <p>{error}</p>
+                    <p>{t(error)}</p>
+
                     <Button
-                        onClick={() => {
-                            setPage((current) => current);
-                            setSort((current) => current);
-                        }}
-                    >გასაგებია</Button>
+                        onClick={() => setError("")}
+                    >
+                        {t("catalog.errorDismiss")}
+                    </Button>
                 </div>
             )}
-            
+
             {isLoading && (
                 <div className="catalog-message" role="status">
-                    გთხოვ, დაელოდო პროდუქტების ჩატვირთვას...
+                    {t("catalog.loadingPleaseWait")}
                 </div>
             )}
 
             {!isLoading && !error && products.length === 0 && (
                 <div className="catalog-message">
-                    <p>შერჩეული პირობებით პროდუქტები ვერ მოიძებნა.</p>
+                    <p>{t("catalog.empty")}</p>
+
                     <Button onClick={resetFilters}>
-                        ფილტრების გასუფთავება
+                        {t("catalog.clearFilters")}
                     </Button>
                 </div>
             )}
 
             {!isLoading && !error && products.length > 0 && (
                 <>
-                    <section className="product-grid" aria-label="პროდუქტების კატალოგი">
+                    <section
+                        className="product-grid"
+                        aria-label={t("catalog.productCatalog")}
+                    >
                         {products.map((product) => (
                             <ProductCard
                                 key={product.id}
@@ -335,23 +423,35 @@ export default function CatalogPage() {
                         ))}
                     </section>
 
-                    <nav className="catalog-pagination" aria-label="გვერდების ნავიგაცია">
+                    <nav
+                        className="catalog-pagination"
+                        aria-label={t("catalog.productCatalog")}
+                    >
                         <button
                             type="button"
                             disabled={page <= 1}
-                            onClick={() => setPage((current) => current - 1)}
+                            onClick={() =>
+                                setPage((current) => current - 1)
+                            }
                         >
-                            წინა
+                            {t("catalog.previous")}
                         </button>
 
-                        <span>გვერდი {page} / {totalPages}</span>
+                        <span>
+                            {t("catalog.page", {
+                                current: page,
+                                total: totalPages,
+                            })}
+                        </span>
 
                         <button
                             type="button"
                             disabled={page >= totalPages}
-                            onClick={() => setPage((current) => current + 1)}
+                            onClick={() =>
+                                setPage((current) => current + 1)
+                            }
                         >
-                            შემდეგი
+                            {t("catalog.next")}
                         </button>
                     </nav>
                 </>

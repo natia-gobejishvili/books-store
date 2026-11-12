@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+
 import { ApiError } from "../../services/api";
 import { authService } from "../../services/authService";
 import { useAuth } from "../../context/AuthContext";
@@ -15,9 +16,11 @@ import FormField from "../../shared/ui/FormField";
 import Alert from "../../shared/ui/Alert";
 
 const loginSchema = z.object({
-    email: z.string().trim().min(1, "ელფოსტა სავალდებულოა")
-    .email("შეიყვანე სწორი ელფოსტის მისამართი"),
-    password: z.string().min(1, "პაროლი სავალდებულოა"),
+    email: z.string().trim()
+        .min(1, "login.validation.emailRequired")
+        .email("login.validation.emailInvalid"),
+    password: z.string()
+        .min(1, "login.validation.passwordRequired"),
 });
 
 type LoginValues = z.infer<typeof loginSchema>;
@@ -26,9 +29,19 @@ export default function LoginPage() {
     const navigate = useNavigate();
     const location = useLocation();
     const { refreshUser } = useAuth();
+    const { t } = useTranslation();
+
     const [serverError, setServerError] = useState("");
     const [loading, setLoading] = useState(false);
-    
+
+    const translateMessage = (message?: string): string => {
+        if (!message) return "";
+
+        return message.startsWith("login.")
+            ? t(message)
+            : message;
+    };
+
     const {
         register,
         handleSubmit,
@@ -40,53 +53,48 @@ export default function LoginPage() {
         reValidateMode: "onChange",
         shouldFocusError: true,
     });
-    
-    /*async function onSubmit(values: LoginValues) {
-        setLoading(true);
-        
-        try {
-            await new Promise((resolve) => setTimeout(resolve, 800));
-            console.log("Login form values:", values);
-        } finally {
-            setLoading(false);
-        }
-    }*/
-   
+
     async function onSubmit(values: LoginValues) {
         setLoading(true);
         setServerError("");
-        
+
         try {
             await authService.login(values);
             await refreshUser();
-            
+
             const state = location.state as {
                 from?: { pathname?: string };
             } | null;
-            
+
             navigate(state?.from?.pathname || "/catalog", {
                 replace: true,
             });
         } catch (error) {
             if (error instanceof ApiError) {
                 if (error.code === "INVALID_CREDENTIALS") {
-                    setServerError("არასწორი ელფოსტა ან პაროლი.");
+                    setServerError("login.server.invalidCredentials");
                 } else {
+                    let hasFieldErrors = false;
+
                     for (const [field, message] of Object.entries(error.fieldErrors)) {
                         if (field === "email" || field === "password") {
-                            setError(field, { type: "server", message });
+                            setError(field, {
+                                type: "server",
+                                message,
+                            });
+                            hasFieldErrors = true;
                         }
                     }
-                    
-                    if (Object.keys(error.fieldErrors).length === 0) {
+
+                    if (!hasFieldErrors) {
                         setServerError(error.message);
                     }
                 }
             } else {
                 setServerError(
                     error instanceof Error
-                    ? error.message
-                    : "შესვლა ვერ მოხერხდა. სცადე თავიდან.",
+                        ? error.message
+                        : "login.server.genericError"
                 );
             }
         } finally {
@@ -94,40 +102,60 @@ export default function LoginPage() {
         }
     }
 
-    
     return (
         <main className="auth-page">
             <section className="auth-intro">
-                <span className="auth-eyebrow">BOOKS STORE</span>
-                <h1>შენი შემდეგი საყვარელი წიგნი იწყება აქ.</h1>
-                <p>შედი შენს ანგარიშში, აღმოაჩინე ახალი ისტორიები და განაგრძე კითხვა იქიდან, სადაც შეჩერდი.</p>
-                
+                <h1>{t("login.introTitle")}</h1>
+                <p>{t("login.introDescription")}</p>
+
                 <ul className="auth-benefits">
-                    <li><span className="benefit-icon">✓</span> აღმოაჩინე საინტერესო წიგნები</li>
-                    <li><span className="benefit-icon">✓</span> მართე შენი შეკვეთები</li>
-                    <li><span className="benefit-icon">✓</span> შეინახე სასურველი არჩევანი</li>
+                    <li>
+                        <span className="benefit-icon">✓</span>
+                        {t("login.benefits.discover")}
+                    </li>
+                    <li>
+                        <span className="benefit-icon">✓</span>
+                        {t("login.benefits.orders")}
+                    </li>
+                    <li>
+                        <span className="benefit-icon">✓</span>
+                        {t("login.benefits.save")}
+                    </li>
                 </ul>
             </section>
-            
+
             <section className="auth-card" aria-labelledby="login-title">
-                <h2 className="auth-card__heading" id="login-title">კეთილი იყოს შენი დაბრუნება!</h2>
-                <p className="auth-card__description">შეიყვანე შენი მონაცემები ანგარიშში შესასვლელად.</p>
-                
-                <form className="auth-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+                <h2 className="auth-card__heading" id="login-title">
+                    {t("login.title")}
+                </h2>
+
+                <p className="auth-card__description">
+                    {t("login.description")}
+                </p>
+
+                <form
+                    className="auth-form"
+                    onSubmit={handleSubmit(onSubmit)}
+                    noValidate
+                >
                     {isSubmitted && Object.keys(errors).length > 0 && (
                         <Alert
                             variant="error"
-                            message="გთხოვ, შეამოწმე მონიშნული ველები."
-                        />    
+                            message={t("login.checkFields")}
+                        />
                     )}
+
                     {serverError && (
-                        <Alert variant="error" message={serverError} />
+                        <Alert
+                            variant="error"
+                            message={translateMessage(serverError)}
+                        />
                     )}
-                    
+
                     <FormField
-                        label="ელფოსტა"
+                        label={t("login.email")}
                         htmlFor="login-email"
-                        error={errors.email?.message}
+                        error={translateMessage(errors.email?.message)}
                     >
                         <Input
                             id="login-email"
@@ -138,25 +166,27 @@ export default function LoginPage() {
                             {...register("email")}
                         />
                     </FormField>
-                    
+
                     <FormField
-                        label="პაროლი"
+                        label={t("login.password")}
                         htmlFor="login-password"
-                        error={errors.password?.message}
+                        error={translateMessage(errors.password?.message)}
                     >
                         <PasswordInput
                             id="login-password"
-                            placeholder="შეიყვანე პაროლი"
+                            placeholder={t("login.passwordPlaceholder")}
                             autoComplete="current-password"
                             hasError={Boolean(errors.password)}
                             {...register("password")}
                         />
                     </FormField>
-                    
+
                     <div className="auth-links auth-links--single">
-                        <Link to="/forgot-password">დაგავიწყდა პაროლი?</Link>
+                        <Link to="/forgot-password">
+                            {t("login.forgotPassword")}
+                        </Link>
                     </div>
-                    
+
                     <Button
                         type="submit"
                         fullWidth
@@ -165,16 +195,21 @@ export default function LoginPage() {
                     >
                         {loading ? (
                             <>
-                                <span className="button-spinner" aria-hidden="true" />
-                                მოწმდება...
+                                <span
+                                    className="button-spinner"
+                                    aria-hidden="true"
+                                />
+                                {t("login.submitting")}
                             </>
-                        ) : "შესვლა"}
+                        ) : (
+                            t("login.submit")
+                        )}
                     </Button>
                 </form>
-                
+
                 <div className="auth-footer">
-                    ჯერ არ გაქვს ანგარიში?{" "}
-                    <Link to="/register">შექმენი ანგარიში</Link>
+                    {t("login.noAccount")}{" "}
+                    <Link to="/register">{t("login.register")}</Link>
                 </div>
             </section>
         </main>

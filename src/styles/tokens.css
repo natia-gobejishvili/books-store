@@ -1,30 +1,64 @@
-
 :root {
-  font-family: Inter, Arial, sans-serif;
-  color: #191827;
-  background: #f7f7fb;
+    font-family: Inter, Arial, sans-serif;
 
-  --color-primary: #635bff;
-  --color-primary-hover: #5047e8;
-  --color-text: #191827;
-  --color-muted: #77778b;
-  --color-border: #dedee9;
-  --color-surface: #ffffff;
-  --color-error: #d92d45;
-  --color-success: #13845b;
+    --color-primary: #635bff;
+    --color-primary-hover: #5047e8;
+    --color-on-primary: #ffffff;
 
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 22px;
+    --color-background: #f7f7fb;
+    --color-surface: #ffffff;
+    --color-surface-secondary: #f1f0f7;
+    --color-text: #191827;
+    --color-muted: #77778b;
+    --color-border: #dedee9;
 
-  --shadow-card: 0 18px 50px rgba(37, 34, 76, 0.08);
+    --color-error: #d92d45;
+    --color-error-bg: #fff0f1;
+    --color-success: #13845b;
+    --color-success-bg: #eaf8f1;
+    --color-warning: #a15c00;
+    --color-warning-bg: #fff6e5;
 
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
+    --shadow-card: 0 18px 50px rgba(37, 34, 76, 0.08);
+    --shadow-header: 0 2px 8px rgba(0, 0, 0, 0.03);
+
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 22px;
+
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+
+    color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+    --color-background: #11121a;
+    --color-surface: #1b1c27;
+    --color-surface-secondary: #272838;
+    --color-text: #f1f0fa;
+    --color-muted: #aaa9bd;
+    --color-border: #38394a;
+
+    --color-primary: #918aff;
+    --color-primary-hover: #aaa5ff;
+    --color-on-primary: #171525;
+
+    --color-error: #ff7b89;
+    --color-error-bg: #3b2029;
+    --color-success: #55d6a0;
+    --color-success-bg: #19372e;
+    --color-warning: #ffc46b;
+    --color-warning-bg: #3a3020;
+
+    --shadow-card: 0 18px 50px rgba(0, 0, 0, 0.25);
+    --shadow-header: 0 2px 12px rgba(0, 0, 0, 0.25);
+
+    color-scheme: dark;
 }

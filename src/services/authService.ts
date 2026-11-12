@@ -1,11 +1,5 @@
 import { apiRequest, TOKEN_KEY } from "./api";
-import type {
-    AuthResponse,
-    LoginPayload,
-    MeResponse,
-    RegisterPayload,
-    User,
-} from "../types/auth";
+import type { AuthResponse, LoginPayload, MeResponse, RegisterPayload, UpdateProfilePayload, User, } from "../types/auth";
 
 type ForgotPasswordPayload = {
     email: string;
@@ -63,6 +57,16 @@ export const authService = {
         }
         
         return data as User;
+    },
+
+    async updateProfile(payload: UpdateProfilePayload): Promise<User> {
+        const data = await apiRequest<{ user: User }>("/auth/me", {
+            method: "PATCH",
+            body: payload,
+            auth: true,
+        });
+
+        return data.user;
     },
     
     async forgotPassword(payload: ForgotPasswordPayload): Promise<void> {

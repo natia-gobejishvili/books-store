@@ -1,0 +1,133 @@
+.site-footer {
+    margin-top: 60px;
+    background: #111827;
+    color: #d1d5db;
+}
+
+.footer-container {
+    width: min(1200px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 50px 0;
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    gap: 50px;
+}
+
+.footer-logo {
+    display: inline-block;
+    margin-bottom: 15px;
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.footer-logo span {
+    color: #60a5fa;
+}
+
+.footer-brand p,
+.footer-contact p {
+    max-width: 340px;
+    color: #9ca3af;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.footer-links,
+.footer-contact {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.footer-links h3,
+.footer-contact h3 {
+    margin: 0 0 8px;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.footer-links a {
+    color: #9ca3af;
+    font-size: 14px;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+    color: #60a5fa;
+}
+
+.footer-bottom {
+    padding: 20px;
+    border-top: 1px solid #374151;
+    text-align: center;
+}
+
+.footer-bottom p {
+    margin: 0;
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+@media (max-width: 900px) {
+    .footer-container {
+        grid-template-columns: 1.3fr 1fr;
+        gap: 32px;
+        padding: 40px 0;
+    }
+
+    .footer-brand {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 700px) {
+    .site-footer {
+        margin-top: 40px;
+    }
+
+    .footer-container {
+        width: calc(100% - 36px);
+        grid-template-columns: 1fr;
+        gap: 28px;
+        padding: 34px 0;
+    }
+
+    .footer-brand {
+        grid-column: auto;
+    }
+
+    .footer-brand p,
+    .footer-contact p {
+        max-width: 100%;
+    }
+
+    .footer-bottom {
+        padding: 18px 12px;
+    }
+}
+
+@media (max-width: 420px) {
+    .footer-container {
+        width: calc(100% - 28px);
+        gap: 24px;
+        padding: 28px 0;
+    }
+
+    .footer-logo {
+        font-size: 20px;
+    }
+
+    .footer-links,
+    .footer-contact {
+        gap: 10px;
+    }
+
+    .footer-bottom p {
+        font-size: 12px;
+        line-height: 1.6;
+    }
+}

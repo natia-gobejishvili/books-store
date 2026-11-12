@@ -3,7 +3,7 @@ export type ProductCategory = {
     id: string;
     slug: string;
     name: string;
-    nameEn: string;
+    nameEn?: string;
     description: string;
     image: string;
     productsCount: number;
@@ -53,6 +53,7 @@ export type Product = {
     category: {
         slug: string;
         name: string;
+        nameEn?: string;
     };
     createdAt: string;
     attributes?: Record<string, unknown>;

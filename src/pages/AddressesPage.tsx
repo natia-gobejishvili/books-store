@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState, type ChangeEvent, type FormEvent, } from "react";
+import {useCallback, useEffect, useState, type ChangeEvent, type FormEvent,} from "react";
+import { useTranslation } from "react-i18next";
 
 import { addressService } from "../services/addressService";
 import type { Address, AddressRequest } from "../types/address";
@@ -15,6 +16,8 @@ const INITIAL_FORM: AddressRequest = {
 };
 
 export default function AddressesPage() {
+    const { t } = useTranslation();
+
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [form, setForm] = useState<AddressRequest>(INITIAL_FORM);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -23,6 +26,14 @@ export default function AddressesPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
+
+    const translateMessage = (message: string | null) => {
+        if (!message) return null;
+
+        return message.startsWith("addresses.")
+            ? t(message)
+            : message;
+    };
 
     const loadAddresses = useCallback(async () => {
         setIsLoading(true);
@@ -35,7 +46,7 @@ export default function AddressesPage() {
             setError(
                 err instanceof Error
                     ? err.message
-                    : "მისამართების ჩატვირთვა ვერ მოხერხდა.",
+                    : "addresses.loadError",
             );
         } finally {
             setIsLoading(false);
@@ -91,7 +102,7 @@ export default function AddressesPage() {
             !form.city.trim() ||
             !form.address.trim()
         ) {
-            setError("გთხოვ, შეავსო ყველა სავალდებულო ველი.");
+            setError("addresses.requiredFields");
             return;
         }
 
@@ -117,10 +128,10 @@ export default function AddressesPage() {
         try {
             if (editingId) {
                 await addressService.updateAddress(editingId, requestData);
-                setSuccess("მისამართი წარმატებით განახლდა.");
+                setSuccess("addresses.updateSuccess");
             } else {
                 await addressService.createAddress(requestData);
-                setSuccess("მისამართი წარმატებით დაემატა.");
+                setSuccess("addresses.addSuccess");
             }
 
             resetForm();
@@ -129,7 +140,7 @@ export default function AddressesPage() {
             setError(
                 err instanceof Error
                     ? err.message
-                    : "ოპერაციის შესრულება ვერ მოხერხდა.",
+                    : "addresses.operationError",
             );
         } finally {
             setIsSaving(false);
@@ -145,20 +156,20 @@ export default function AddressesPage() {
                 isDefault: true,
             });
 
-            setSuccess("ძირითადი მისამართი წარმატებით შეიცვალა.");
+            setSuccess("addresses.defaultSuccess");
             await loadAddresses();
         } catch (err) {
             setError(
                 err instanceof Error
                     ? err.message
-                    : "ძირითადი მისამართის შეცვლა ვერ მოხერხდა.",
+                    : "addresses.defaultError",
             );
         }
     }
 
     async function handleDelete(id: string) {
         const confirmed = window.confirm(
-            "ნამდვილად გსურს ამ მისამართის წაშლა?",
+            t("addresses.deleteConfirmation"),
         );
 
         if (!confirmed) return;
@@ -173,13 +184,13 @@ export default function AddressesPage() {
                 resetForm();
             }
 
-            setSuccess("მისამართი წარმატებით წაიშალა.");
+            setSuccess("addresses.deleteSuccess");
             await loadAddresses();
         } catch (err) {
             setError(
                 err instanceof Error
                     ? err.message
-                    : "მისამართის წაშლა ვერ მოხერხდა.",
+                    : "addresses.deleteError",
             );
         }
     }
@@ -190,26 +201,26 @@ export default function AddressesPage() {
                 <header className="addresses-header">
                     <div>
                         <p className="addresses-eyebrow">BOOKS STORE</p>
-                        <h1>ჩემი მისამართები</h1>
+                        <h1>{t("addresses.title")}</h1>
                         <p className="addresses-description">
-                            მართე მიწოდების მისამართები ერთ სივრცეში.
+                            {t("addresses.description")}
                         </p>
                     </div>
 
                     <a href="/catalog" className="back-to-catalog">
-                        ← კატალოგზე დაბრუნება
+                        ← {t("addresses.backToCatalog")}
                     </a>
                 </header>
 
                 {error && (
                     <div className="address-message address-error">
-                        {error}
+                        {translateMessage(error)}
                     </div>
                 )}
 
                 {success && (
                     <div className="address-message address-success">
-                        {success}
+                        {translateMessage(success)}
                     </div>
                 )}
 
@@ -217,72 +228,77 @@ export default function AddressesPage() {
                     <div className="section-heading">
                         <h2>
                             {editingId
-                                ? "მისამართის რედაქტირება"
-                                : "ახალი მისამართის დამატება"}
+                                ? t("addresses.editTitle")
+                                : t("addresses.addTitle")}
                         </h2>
 
-                        <span>{addresses.length}/10 მისამართი</span>
+                        <span>
+                            {t("addresses.addressCount", {
+                                count: addresses.length,
+                                max: 10,
+                            })}
+                        </span>
                     </div>
 
                     <form className="address-form" onSubmit={handleSubmit}>
                         <div className="address-form-grid">
                             <label className="address-field">
-                                <span>მისამართის დასახელება *</span>
+                                <span>{t("addresses.label")} *</span>
                                 <input
                                     type="text"
                                     name="label"
                                     value={form.label}
                                     onChange={handleInputChange}
-                                    placeholder="მაგ. სახლი, სამსახური"
+                                    placeholder={t("addresses.labelPlaceholder")}
                                     maxLength={50}
                                     required
                                 />
                             </label>
 
                             <label className="address-field">
-                                <span>სახელი და გვარი *</span>
+                                <span>{t("addresses.fullName")} *</span>
                                 <input
                                     type="text"
                                     name="fullName"
                                     value={form.fullName}
                                     onChange={handleInputChange}
-                                    placeholder="შეიყვანე სახელი და გვარი"
+                                    placeholder={t("addresses.fullNamePlaceholder")}
                                     required
                                 />
                             </label>
 
                             <label className="address-field">
-                                <span>ტელეფონის ნომერი *</span>
+                                <span>{t("addresses.phone")} *</span>
                                 <input
                                     type="tel"
                                     name="phone"
                                     value={form.phone}
                                     onChange={handleInputChange}
-                                    placeholder="მაგ. 599123456"
+                                    placeholder={t("addresses.phonePlaceholder")}
                                     required
                                 />
                             </label>
 
                             <label className="address-field">
-                                <span>ქალაქი *</span>
+                                <span>{t("addresses.city")} *</span>
                                 <input
                                     type="text"
                                     name="city"
                                     value={form.city}
                                     onChange={handleInputChange}
-                                    placeholder="შეიყვანე ქალაქი"
+                                    placeholder={t("addresses.cityPlaceholder")}
                                     required
                                 />
                             </label>
 
                             <label className="address-field address-field-full">
-                                <span>სრული მისამართი *</span>
+                                <span>{t("addresses.address")} *</span>
                                 <input
                                     type="text"
                                     name="address"
                                     value={form.address}
                                     onChange={handleInputChange}
-                                    placeholder="ქუჩა, სახლის ნომერი, ბინა..."
+                                    placeholder={t("addresses.addressPlaceholder")}
                                     required
                                 />
                             </label>
@@ -295,7 +311,7 @@ export default function AddressesPage() {
                                 checked={form.isDefault}
                                 onChange={handleInputChange}
                             />
-                            <span>ძირითად მისამართად მონიშვნა</span>
+                            <span>{t("addresses.setAsDefault")}</span>
                         </label>
 
                         <div className="address-form-actions">
@@ -308,10 +324,10 @@ export default function AddressesPage() {
                                 }
                             >
                                 {isSaving
-                                    ? "მუშავდება..."
+                                    ? t("addresses.processing")
                                     : editingId
-                                      ? "ცვლილებების შენახვა"
-                                      : "მისამართის დამატება"}
+                                        ? t("addresses.saveChanges")
+                                        : t("addresses.addAddress")}
                             </button>
 
                             {editingId && (
@@ -321,15 +337,14 @@ export default function AddressesPage() {
                                     onClick={resetForm}
                                     disabled={isSaving}
                                 >
-                                    გაუქმება
+                                    {t("addresses.cancel")}
                                 </button>
                             )}
                         </div>
 
                         {!editingId && addresses.length >= 10 && (
                             <p className="address-limit-message">
-                                მიღწეულია მისამართების მაქსიმალური რაოდენობა.
-                                ახალი მისამართის დასამატებლად წაშალე არსებული.
+                                {t("addresses.limitReached")}
                             </p>
                         )}
                     </form>
@@ -337,20 +352,17 @@ export default function AddressesPage() {
 
                 <section className="saved-addresses-section">
                     <div className="section-heading">
-                        <h2>შენახული მისამართები</h2>
+                        <h2>{t("addresses.savedTitle")}</h2>
                     </div>
 
                     {isLoading ? (
                         <div className="addresses-loading">
-                            მისამართები იტვირთება...
+                            {t("addresses.loading")}
                         </div>
                     ) : addresses.length === 0 ? (
                         <div className="addresses-empty">
-                            <h3>მისამართები ჯერ არ გაქვს დამატებული</h3>
-                            <p>
-                                დაამატე მისამართი, რათა შეკვეთის გაფორმება
-                                უფრო მარტივად შეძლო.
-                            </p>
+                            <h3>{t("addresses.emptyTitle")}</h3>
+                            <p>{t("addresses.emptyDescription")}</p>
                         </div>
                     ) : (
                         <div className="addresses-list">
@@ -364,7 +376,7 @@ export default function AddressesPage() {
                                             <h3>{address.label}</h3>
                                             {address.isDefault && (
                                                 <span className="default-address-badge">
-                                                    ძირითადი მისამართი
+                                                    {t("addresses.defaultBadge")}
                                                 </span>
                                             )}
                                         </div>
@@ -372,19 +384,19 @@ export default function AddressesPage() {
 
                                     <div className="address-card-details">
                                         <p>
-                                            <strong>მიმღები:</strong>{" "}
+                                            <strong>{t("addresses.recipient")}:</strong>{" "}
                                             {address.fullName}
                                         </p>
                                         <p>
-                                            <strong>ტელეფონი:</strong>{" "}
+                                            <strong>{t("addresses.phone")}:</strong>{" "}
                                             {address.phone}
                                         </p>
                                         <p>
-                                            <strong>ქალაქი:</strong>{" "}
+                                            <strong>{t("addresses.city")}:</strong>{" "}
                                             {address.city}
                                         </p>
                                         <p>
-                                            <strong>მისამართი:</strong>{" "}
+                                            <strong>{t("addresses.address")}:</strong>{" "}
                                             {address.address}
                                         </p>
                                     </div>
@@ -394,22 +406,18 @@ export default function AddressesPage() {
                                             <button
                                                 type="button"
                                                 onClick={() =>
-                                                    void handleSetDefault(
-                                                        address.id,
-                                                    )
+                                                    void handleSetDefault(address.id)
                                                 }
                                             >
-                                                ძირითადად არჩევა
+                                                {t("addresses.makeDefault")}
                                             </button>
                                         )}
 
                                         <button
                                             type="button"
-                                            onClick={() =>
-                                                handleEdit(address)
-                                            }
+                                            onClick={() => handleEdit(address)}
                                         >
-                                            რედაქტირება
+                                            {t("addresses.edit")}
                                         </button>
 
                                         <button
@@ -419,7 +427,7 @@ export default function AddressesPage() {
                                                 void handleDelete(address.id)
                                             }
                                         >
-                                            წაშლა
+                                            {t("addresses.delete")}
                                         </button>
                                     </div>
                                 </article>

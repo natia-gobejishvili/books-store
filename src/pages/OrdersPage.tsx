@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { orderService } from "../services/orderService";
 import type { Order } from "../types/order";
@@ -13,6 +14,9 @@ function OrdersPage() {
     const [error, setError] = useState("");
 
     const navigate = useNavigate();
+    const { t, i18n } = useTranslation();
+
+    const locale = i18n.language === "en" ? "en-US" : "ka-GE";
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -26,7 +30,7 @@ function OrdersPage() {
                 setError(
                     err instanceof Error
                         ? err.message
-                        : "შეკვეთების ჩატვირთვა ვერ მოხერხდა."
+                        : "orders.loadError"
                 );
             } finally {
                 setIsLoading(false);
@@ -37,10 +41,13 @@ function OrdersPage() {
     }, []);
 
     const formatPrice = (price: number) =>
-        `${price.toFixed(2)} ₾`;
+        `${price.toLocaleString(locale, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        })} ₾`;
 
     const formatDate = (date: string) =>
-        new Date(date).toLocaleDateString("ka-GE", {
+        new Date(date).toLocaleString(locale, {
             year: "numeric",
             month: "long",
             day: "numeric",
@@ -50,10 +57,10 @@ function OrdersPage() {
 
     const getStatusLabel = (status: Order["status"]) => {
         const statuses: Record<Order["status"], string> = {
-            pending_payment: "გადახდის მოლოდინში",
-            paid: "გადახდილია",
-            cancelled: "გაუქმებულია",
-            failed: "წარუმატებელი",
+            pending_payment: t("orders.status.pending"),
+            paid: t("orders.status.paid"),
+            cancelled: t("orders.status.cancelled"),
+            failed: t("orders.status.failed"),
         };
 
         return statuses[status] ?? status;
@@ -63,7 +70,7 @@ function OrdersPage() {
         return (
             <div className="orders-page">
                 <p className="orders-message">
-                    შეკვეთები იტვირთება...
+                    {t("orders.loading")}
                 </p>
             </div>
         );
@@ -72,9 +79,14 @@ function OrdersPage() {
     if (error) {
         return (
             <div className="orders-page">
-                <p className="orders-error">{error}</p>
+                <p className="orders-error">
+                    {error === "orders.loadError"
+                        ? t("orders.loadError")
+                        : error}
+                </p>
+
                 <Button onClick={() => window.location.reload()}>
-                    თავიდან ცდა
+                    {t("orders.retry")}
                 </Button>
             </div>
         );
@@ -84,45 +96,37 @@ function OrdersPage() {
         <main className="orders-page">
             <div className="orders-header">
                 <div>
-                    <h1>ჩემი შეკვეთები</h1>
-                    <p>შენი შეკვეთების ისტორია</p>
+                    <h1>{t("orders.title")}</h1>
+                    <p>{t("orders.subtitle")}</p>
                 </div>
 
                 <Button onClick={() => navigate("/catalog")}>
-                    კატალოგში დაბრუნება
+                    {t("orders.backToCatalog")}
                 </Button>
             </div>
 
             {orders.length === 0 ? (
                 <section className="orders-empty">
-                    <h2>შეკვეთები ჯერ არ გაქვს</h2>
-                    <p>
-                        როდესაც პირველ შეკვეთას გააფორმებ,
-                        ის აქ გამოჩნდება.
-                    </p>
+                    <h2>{t("orders.emptyTitle")}</h2>
+                    <p>{t("orders.emptyDescription")}</p>
 
                     <Button onClick={() => navigate("/catalog")}>
-                        წიგნების დათვალიერება
+                        {t("orders.browseBooks")}
                     </Button>
                 </section>
             ) : (
                 <section className="orders-list">
                     {orders.map((order) => (
-                        <article
-                            className="order-card"
-                            key={order.id}
-                        >
+                        <article className="order-card" key={order.id}>
                             <div className="order-card-header">
                                 <div>
                                     <span className="order-label">
-                                        შეკვეთის ნომერი
+                                        {t("orders.orderNumber")}
                                     </span>
                                     <h2>#{order.id}</h2>
                                 </div>
 
-                                <span
-                                    className={`order-status status-${order.status}`}
-                                >
+                                <span className={`order-status status-${order.status}`}>
                                     {getStatusLabel(order.status)}
                                 </span>
                             </div>
@@ -130,14 +134,14 @@ function OrdersPage() {
                             <div className="order-card-info">
                                 <div>
                                     <span className="order-label">
-                                        შეკვეთის თარიღი
+                                        {t("orders.orderDate")}
                                     </span>
                                     <p>{formatDate(order.createdAt)}</p>
                                 </div>
 
                                 <div>
                                     <span className="order-label">
-                                        პროდუქტები
+                                        {t("orders.products")}
                                     </span>
                                     <p>
                                         {order.items.reduce(
@@ -150,7 +154,7 @@ function OrdersPage() {
 
                                 <div>
                                     <span className="order-label">
-                                        ჯამური ღირებულება
+                                        {t("orders.total")}
                                     </span>
                                     <p className="order-total">
                                         {formatPrice(order.total)}
@@ -160,7 +164,9 @@ function OrdersPage() {
 
                             <div className="order-card-footer">
                                 <span>
-                                    {order.items.length} დასახელების პროდუქტი
+                                    {t("orders.productTypes", {
+                                        count: order.items.length,
+                                    })}
                                 </span>
 
                                 <Button
@@ -168,7 +174,7 @@ function OrdersPage() {
                                         navigate(`/orders/${order.id}`)
                                     }
                                 >
-                                    დეტალების ნახვა
+                                    {t("orders.viewDetails")}
                                 </Button>
                             </div>
                         </article>

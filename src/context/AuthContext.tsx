@@ -17,6 +17,7 @@ type AuthContextValue = {
   isLoading: boolean;
   isAuthenticated: boolean;
   refreshUser: () => Promise<User>;
+  updateUser: (updatedUser: User) => void;
   logout: () => void;
 };
 
@@ -31,6 +32,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const currentUser = await authService.getMe();
     setUser(currentUser);
     return currentUser;
+  }, []);
+
+  const updateUser = useCallback((updatedUser: User) => {
+    setUser(updatedUser);
   }, []);
 
   const logout = useCallback(() => {
@@ -93,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading,
     isAuthenticated: Boolean(user),
     refreshUser,
+    updateUser,
     logout,
   };
 

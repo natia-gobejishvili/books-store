@@ -1,12 +1,15 @@
-
 @import "./tokens.css";
 
-* {
-  box-sizing: border-box;
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
 }
 
 html {
   min-width: 320px;
+  width: 100%;
+  overflow-x: hidden;
   scroll-behavior: smooth;
 }
 
@@ -15,14 +18,30 @@ body {
   min-width: 320px;
   min-height: 100vh;
   color: var(--color-text);
-  background: var(--color-background, #f7f7fb);
+  background: var(--color-background);
   font-family: Inter, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 button,
-input {
+input,
+textarea,
+select {
   font: inherit;
+}
+
+input,
+textarea,
+select {
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-muted);
 }
 
 button,
@@ -33,7 +52,9 @@ input {
 
 button:focus-visible,
 a:focus-visible,
-input:focus-visible {
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
   outline: 3px solid rgba(99, 91, 255, 0.35);
   outline-offset: 3px;
 }
@@ -54,4 +75,11 @@ button:disabled {
 
 #root {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-content {
+  flex: 1;
+  width: 100%;
 }

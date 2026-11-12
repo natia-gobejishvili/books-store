@@ -12,28 +12,40 @@ import { CartProvider } from "../context/CartContext";
 import CheckoutPage from "../pages/CheckoutPage";
 import OrdersPage from "../pages/OrdersPage";
 import OrderDetailsPage from "../pages/OrderDetailsPage";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import ProfilePage from "../pages/ProfilePage";
+import HomePage from "../pages/HomePage";
 
 export default function App() {
     return (
         <CartProvider>
-            <Routes>
-                <Route path="/" element={<Navigate to="/login" replace />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Header />
 
-                <Route element={<ProtectedRoute />}>
+            <div className="app-content">
+                <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+
                     <Route path="/catalog" element={<CatalogPage />} />
                     <Route path="/products/:slug" element={<ProductDetailsPage />} />
-                    <Route path="/cart" element={<CartPage />} />
-                    <Route path="/addresses" element={<AddressesPage />} />
-                    <Route path="/checkout" element={<CheckoutPage />} />
-                    <Route path="/orders" element={<OrdersPage />} />
-                    <Route path="/orders/:id" element={<OrderDetailsPage />} />
-                </Route>
-                
-                <Route path="*" element={<Navigate to="/login" replace />} />
-            </Routes>
+
+                    <Route element={<ProtectedRoute />}>
+                        <Route path="/cart" element={<CartPage />} />
+                        <Route path="/addresses" element={<AddressesPage />} />
+                        <Route path="/checkout" element={<CheckoutPage />} />
+                        <Route path="/orders" element={<OrdersPage />} />
+                        <Route path="/orders/:id" element={<OrderDetailsPage />} />
+                        <Route path="/profile" element={<ProfilePage />} />
+                    </Route>
+
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </div>
+
+            <Footer />
         </CartProvider>
     );
 }

@@ -1,5 +1,11 @@
-import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import {
+    useEffect,
+    useState,
+    type ChangeEvent,
+    type FormEvent,
+} from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { checkoutService } from "../services/checkoutService";
 import type {
@@ -28,6 +34,9 @@ const INITIAL_CARD: CardDetails = {
 
 export default function CheckoutPage() {
     const navigate = useNavigate();
+    const { t, i18n } = useTranslation();
+
+    const locale = i18n.language.startsWith("en") ? "en-US" : "ka-GE";
 
     const [checkout, setCheckout] = useState<CheckoutResponse | null>(null);
     const [shipping, setShipping] =
@@ -76,7 +85,7 @@ export default function CheckoutPage() {
                     setError(
                         err instanceof Error
                             ? err.message
-                            : "შეკვეთის მონაცემების ჩატვირთვა ვერ მოხერხდა.",
+                            : t("checkout.loadError"),
                     );
                 }
             } finally {
@@ -92,7 +101,7 @@ export default function CheckoutPage() {
     }, []);
 
     const formatPrice = (price: number) =>
-        `${price.toLocaleString("ka-GE")} ₾`;
+        `${price.toLocaleString(locale)} ₾`;
 
     function handleShippingChange(
         event: ChangeEvent<HTMLInputElement>,
@@ -176,7 +185,7 @@ export default function CheckoutPage() {
         setSuccess(null);
 
         if (!checkout || checkout.items.length === 0) {
-            setError("კალათა ცარიელია.");
+            setError(t("checkout.emptyCart"));
             return;
         }
 
@@ -186,24 +195,24 @@ export default function CheckoutPage() {
             !shipping.city.trim() ||
             !shipping.address.trim()
         ) {
-            setError("გთხოვ, შეავსო მიწოდების ყველა ველი.");
+            setError(t("checkout.shippingRequired"));
             return;
         }
 
         const cardNumber = card.number.replace(/\s/g, "");
 
         if (cardNumber.length !== 16) {
-            setError("ბარათის ნომერი უნდა შეიცავდეს 16 ციფრს.");
+            setError(t("checkout.invalidCardNumber"));
             return;
         }
 
         if (!card.holder.trim()) {
-            setError("შეიყვანე ბარათის მფლობელის სახელი და გვარი.");
+            setError(t("checkout.cardHolderRequired"));
             return;
         }
 
         if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(card.expiry)) {
-            setError("ბარათის ვადა შეიყვანე MM/YY ფორმატით.");
+            setError(t("checkout.invalidExpiry"));
             return;
         }
 
@@ -215,12 +224,12 @@ export default function CheckoutPage() {
         const expiryMonth = year * 12 + month - 1;
 
         if (expiryMonth < currentMonth) {
-            setError("ბარათის ვადა გასულია.");
+            setError(t("checkout.expiredCard"));
             return;
         }
 
         if (!/^\d{3,4}$/.test(card.cvc)) {
-            setError("CVC უნდა შეიცავდეს 3 ან 4 ციფრს.");
+            setError(t("checkout.invalidCvc"));
             return;
         }
 
@@ -243,14 +252,12 @@ export default function CheckoutPage() {
             });
 
             setOrder(response);
-            setSuccess(
-                "შეკვეთა შეიქმნა. გადახდის დასასრულებლად შეიყვანე ელფოსტაზე მიღებული კოდი.",
-            );
+            setSuccess(t("checkout.orderCreated"));
         } catch (err) {
             setError(
                 err instanceof Error
                     ? err.message
-                    : "შეკვეთის შექმნა ვერ მოხერხდა.",
+                    : t("checkout.createOrderError"),
             );
         } finally {
             setIsSubmitting(false);
@@ -263,7 +270,7 @@ export default function CheckoutPage() {
         if (!order) return;
 
         if (!/^\d{6}$/.test(confirmationCode)) {
-            setError("დადასტურების კოდი უნდა შეიცავდეს 6 ციფრს.");
+            setError(t("checkout.invalidConfirmationCode"));
             return;
         }
 
@@ -276,7 +283,7 @@ export default function CheckoutPage() {
                 code: confirmationCode,
             });
 
-            setSuccess("გადახდა წარმატებით დადასტურდა! შეკვეთა მიღებულია.");
+            setSuccess(t("checkout.paymentConfirmed"));
             setOrder(null);
             setConfirmationCode("");
             setCheckout(null);
@@ -284,7 +291,7 @@ export default function CheckoutPage() {
             setError(
                 err instanceof Error
                     ? err.message
-                    : "გადახდის დადასტურება ვერ მოხერხდა.",
+                    : t("checkout.confirmPaymentError"),
             );
         } finally {
             setIsSubmitting(false);
@@ -300,12 +307,12 @@ export default function CheckoutPage() {
 
         try {
             await checkoutService.resendCode(order.orderId);
-            setSuccess("დადასტურების კოდი ხელახლა გაიგზავნა.");
+            setSuccess(t("checkout.codeResent"));
         } catch (err) {
             setError(
                 err instanceof Error
                     ? err.message
-                    : "კოდის ხელახლა გაგზავნა ვერ მოხერხდა.",
+                    : t("checkout.resendCodeError"),
             );
         } finally {
             setIsSubmitting(false);
@@ -317,7 +324,7 @@ export default function CheckoutPage() {
             <main className="checkout-page">
                 <div className="checkout-container">
                     <p className="checkout-loading">
-                        შეკვეთის მონაცემები იტვირთება...
+                        {t("checkout.loading")}
                     </p>
                 </div>
             </main>
@@ -329,11 +336,11 @@ export default function CheckoutPage() {
             <main className="checkout-page">
                 <section className="checkout-success-page">
                     <div className="checkout-success-icon">✓</div>
-                    <h1>შეკვეთა წარმატებით გაფორმდა!</h1>
+                    <h1>{t("checkout.successTitle")}</h1>
                     <p>{success}</p>
 
                     <Button onClick={() => navigate("/catalog")}>
-                        კატალოგში დაბრუნება
+                        {t("checkout.backToCatalog")}
                     </Button>
                 </section>
             </main>
@@ -345,11 +352,11 @@ export default function CheckoutPage() {
             <main className="checkout-page">
                 <div className="checkout-container">
                     <div className="checkout-alert checkout-alert-error">
-                        {error || "შეკვეთის მონაცემების მიღება ვერ მოხერხდა."}
+                        {error || t("checkout.loadError")}
                     </div>
 
                     <Button onClick={() => navigate("/cart")}>
-                        კალათაში დაბრუნება
+                        {t("checkout.backToCart")}
                     </Button>
                 </div>
             </main>
@@ -360,10 +367,10 @@ export default function CheckoutPage() {
         return (
             <main className="checkout-page">
                 <section className="checkout-success-page">
-                    <h1>კალათა ცარიელია</h1>
-                    <p>შეკვეთის გასაფორმებლად დაამატე პროდუქტები კალათაში.</p>
+                    <h1>{t("checkout.emptyCartTitle")}</h1>
+                    <p>{t("checkout.emptyCartDescription")}</p>
                     <Button onClick={() => navigate("/catalog")}>
-                        კატალოგში დაბრუნება
+                        {t("checkout.backToCatalog")}
                     </Button>
                 </section>
             </main>
@@ -375,16 +382,15 @@ export default function CheckoutPage() {
             <div className="checkout-container">
                 <header className="checkout-header">
                     <div>
-                        <span className="auth-eyebrow">BOOKS STORE</span>
-                        <h1>შეკვეთის გაფორმება</h1>
-                        <p>შეავსე მონაცემები და დაასრულე შეკვეთა.</p>
+                        <h1>{t("checkout.title")}</h1>
+                        <p>{t("checkout.subtitle")}</p>
                     </div>
 
                     <Button
                         variant="secondary"
                         onClick={() => navigate("/cart")}
                     >
-                        ← კალათაში დაბრუნება
+                        ← {t("checkout.backToCart")}
                     </Button>
                 </header>
 
@@ -403,24 +409,29 @@ export default function CheckoutPage() {
                 {order ? (
                     <section className="confirmation-card">
                         <div className="confirmation-icon">✉</div>
-                        <h2>გადახდის დადასტურება</h2>
+                        <h2>{t("checkout.confirmationTitle")}</h2>
 
-                        <p>შეკვეთა შექმნილია. ელფოსტაზე გამოგზავნილი 6-ნიშნა კოდი შეიყვანე ქვემოთ.</p>
+                        <p>{t("checkout.confirmationDescription")}</p>
 
                         <div className="confirmation-order-info">
-                            <span>შეკვეთის ნომერი</span>
+                            <span>{t("checkout.orderNumber")}</span>
                             <strong>{order.orderId}</strong>
 
-                            <span>გადასახდელი თანხა</span>
+                            <span>{t("checkout.amountDue")}</span>
                             <strong>{formatPrice(order.total)}</strong>
 
-                            <span>კოდის მოქმედების დრო</span>
-                            <strong>{order.expiresInMinutes} წუთი</strong>
+                            <span>{t("checkout.codeExpiry")}</span>
+                            <strong>
+                                {t("checkout.minutes", {
+                                    count: order.expiresInMinutes,
+                                })}
+                            </strong>
                         </div>
 
                         {order.devCode && (
                             <div className="dev-code-notice">
-                                სატესტო კოდი: <strong>{order.devCode}</strong>
+                                {t("checkout.testCode")}:{" "}
+                                <strong>{order.devCode}</strong>
                             </div>
                         )}
 
@@ -429,7 +440,7 @@ export default function CheckoutPage() {
                             onSubmit={handleConfirmOrder}
                         >
                             <label>
-                                6-ნიშნა დამადასტურებელი კოდი
+                                {t("checkout.confirmationCodeLabel")}
                                 <input
                                     type="text"
                                     inputMode="numeric"
@@ -452,7 +463,9 @@ export default function CheckoutPage() {
                                 className="checkout-submit-button"
                                 disabled={isSubmitting}
                             >
-                                {isSubmitting ? "მოწმდება..." : "გადახდის დადასტურება"}
+                                {isSubmitting
+                                    ? t("checkout.checking")
+                                    : t("checkout.confirmPayment")}
                             </button>
 
                             <button
@@ -461,7 +474,7 @@ export default function CheckoutPage() {
                                 onClick={() => void handleResendCode()}
                                 disabled={isSubmitting}
                             >
-                                კოდის ხელახლა გაგზავნა
+                                {t("checkout.resendCode")}
                             </button>
                         </form>
                     </section>
@@ -472,11 +485,13 @@ export default function CheckoutPage() {
                             onSubmit={handleCreateOrder}
                         >
                             <section className="checkout-section">
-                                <h2>1. მიწოდების მისამართი</h2>
+                                <h2>{t("checkout.shippingTitle")}</h2>
 
                                 {checkout.addresses.length > 0 && (
                                     <label className="checkout-field">
-                                        <span>შენახული მისამართის არჩევა</span>
+                                        <span>
+                                            {t("checkout.savedAddress")}
+                                        </span>
                                         <select
                                             value={selectedAddressId}
                                             onChange={(event) =>
@@ -486,7 +501,7 @@ export default function CheckoutPage() {
                                             }
                                         >
                                             <option value="">
-                                                აირჩიე მისამართი
+                                                {t("checkout.chooseAddress")}
                                             </option>
 
                                             {checkout.addresses.map(
@@ -497,7 +512,7 @@ export default function CheckoutPage() {
                                                     >
                                                         {address.label}
                                                         {address.isDefault
-                                                            ? " (ძირითადი)"
+                                                            ? ` (${t("checkout.defaultAddress")})`
                                                             : ""}
                                                     </option>
                                                 ),
@@ -508,7 +523,9 @@ export default function CheckoutPage() {
 
                                 <div className="checkout-fields-grid">
                                     <label className="checkout-field">
-                                        <span>სახელი და გვარი *</span>
+                                        <span>
+                                            {t("checkout.fullName")} *
+                                        </span>
                                         <input
                                             name="fullName"
                                             value={shipping.fullName}
@@ -518,7 +535,7 @@ export default function CheckoutPage() {
                                     </label>
 
                                     <label className="checkout-field">
-                                        <span>ტელეფონი *</span>
+                                        <span>{t("checkout.phone")} *</span>
                                         <input
                                             name="phone"
                                             type="tel"
@@ -529,7 +546,7 @@ export default function CheckoutPage() {
                                     </label>
 
                                     <label className="checkout-field">
-                                        <span>ქალაქი *</span>
+                                        <span>{t("checkout.city")} *</span>
                                         <input
                                             name="city"
                                             value={shipping.city}
@@ -539,7 +556,9 @@ export default function CheckoutPage() {
                                     </label>
 
                                     <label className="checkout-field">
-                                        <span>სრული მისამართი *</span>
+                                        <span>
+                                            {t("checkout.address")} *
+                                        </span>
                                         <input
                                             name="address"
                                             value={shipping.address}
@@ -550,23 +569,25 @@ export default function CheckoutPage() {
                                 </div>
 
                                 <p className="checkout-address-hint">
-                                    მისამართის დამატება ან მართვა შეგიძლია{" "}
+                                    {t("checkout.addressHint")}{" "}
                                     <button
                                         type="button"
                                         onClick={() => navigate("/addresses")}
                                     >
-                                        მისამართების გვერდიდან
+                                        {t("checkout.addressesPage")}
                                     </button>
                                     .
                                 </p>
                             </section>
 
                             <section className="checkout-section">
-                                <h2>2. ბარათის მონაცემები</h2>
+                                <h2>{t("checkout.cardTitle")}</h2>
 
                                 <div className="checkout-fields-grid">
                                     <label className="checkout-field checkout-field-full">
-                                        <span>ბარათის ნომერი *</span>
+                                        <span>
+                                            {t("checkout.cardNumber")} *
+                                        </span>
                                         <input
                                             name="number"
                                             value={card.number}
@@ -579,19 +600,23 @@ export default function CheckoutPage() {
                                     </label>
 
                                     <label className="checkout-field checkout-field-full">
-                                        <span>ბარათის მფლობელი *</span>
+                                        <span>
+                                            {t("checkout.cardHolder")} *
+                                        </span>
                                         <input
                                             name="holder"
                                             value={card.holder}
                                             onChange={handleCardChange}
-                                            placeholder="სახელი და გვარი"
+                                            placeholder={t("checkout.cardHolderPlaceholder")}
                                             autoComplete="cc-name"
                                             required
                                         />
                                     </label>
 
                                     <label className="checkout-field">
-                                        <span>ვადა (MM/YY) *</span>
+                                        <span>
+                                            {t("checkout.expiry")} *
+                                        </span>
                                         <input
                                             name="expiry"
                                             value={card.expiry}
@@ -604,7 +629,7 @@ export default function CheckoutPage() {
                                     </label>
 
                                     <label className="checkout-field">
-                                        <span>CVC *</span>
+                                        <span>{t("checkout.cvc")} *</span>
                                         <input
                                             name="cvc"
                                             type="password"
@@ -619,7 +644,7 @@ export default function CheckoutPage() {
                                 </div>
 
                                 <p className="checkout-test-hint">
-                                    სატესტო ბარათი: 4242 4242 4242 4242. გამოიყენე მომავალი ვადა და ნებისმიერი ვალიდური CVC.
+                                    {t("checkout.testCardHint")}
                                 </p>
                             </section>
 
@@ -628,12 +653,14 @@ export default function CheckoutPage() {
                                 className="checkout-submit-button"
                                 disabled={isSubmitting}
                             >
-                                {isSubmitting ? "შეკვეთა მუშავდება..." : "შეკვეთის შექმნა"}
+                                {isSubmitting
+                                    ? t("checkout.processing")
+                                    : t("checkout.createOrder")}
                             </button>
                         </form>
 
                         <aside className="checkout-summary">
-                            <h2>შეკვეთის შეჯამება</h2>
+                            <h2>{t("checkout.summaryTitle")}</h2>
 
                             <div className="checkout-summary-items">
                                 {checkout.items.map((item) => (
@@ -642,7 +669,9 @@ export default function CheckoutPage() {
                                         key={item.id}
                                     >
                                         <div>
-                                            <strong>{item.product.title}</strong>
+                                            <strong>
+                                                {item.product.title}
+                                            </strong>
                                             <span>
                                                 {item.qty} x{" "}
                                                 {formatPrice(item.product.price)}
@@ -657,29 +686,32 @@ export default function CheckoutPage() {
                             </div>
 
                             <div className="checkout-summary-row">
-                                <span>პროდუქტების ღირებულება</span>
+                                <span>
+                                    {t("checkout.subtotal")}
+                                </span>
                                 <strong>
                                     {formatPrice(checkout.subtotal)}
                                 </strong>
                             </div>
 
                             <div className="checkout-summary-row">
-                                <span>მიწოდება</span>
+                                <span>{t("checkout.shippingFee")}</span>
                                 <strong>
                                     {checkout.shippingFee === 0
-                                        ? "უფასო"
+                                        ? t("checkout.free")
                                         : formatPrice(checkout.shippingFee)}
                                 </strong>
                             </div>
 
                             <div className="checkout-summary-row checkout-summary-total">
-                                <span>სულ გადასახდელი</span>
+                                <span>{t("checkout.totalDue")}</span>
                                 <strong>{formatPrice(checkout.total)}</strong>
                             </div>
 
                             <p className="checkout-free-shipping">
-                                {checkout.freeShippingFrom} ₾-დან მიწოდება
-                                უფასოა.
+                                {t("checkout.freeShippingHint", {
+                                    amount: checkout.freeShippingFrom,
+                                })}
                             </p>
                         </aside>
                     </div>

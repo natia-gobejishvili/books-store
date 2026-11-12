@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { orderService } from "../services/orderService";
 import type { Order } from "../types/order";
@@ -10,6 +11,9 @@ import "../styles/order-details.css";
 function OrderDetailsPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const { t, i18n } = useTranslation();
+
+    const locale = i18n.language === "en" ? "en-US" : "ka-GE";
 
     const [order, setOrder] = useState<Order | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -18,7 +22,7 @@ function OrderDetailsPage() {
     useEffect(() => {
         const fetchOrder = async () => {
             if (!id) {
-                setError("შეკვეთის ნომერი მითითებული არ არის.");
+                setError("orderDetails.missingId");
                 setIsLoading(false);
                 return;
             }
@@ -33,7 +37,7 @@ function OrderDetailsPage() {
                 setError(
                     err instanceof Error
                         ? err.message
-                        : "შეკვეთის ჩატვირთვა ვერ მოხერხდა."
+                        : "orderDetails.loadError"
                 );
             } finally {
                 setIsLoading(false);
@@ -44,10 +48,13 @@ function OrderDetailsPage() {
     }, [id]);
 
     const formatPrice = (price: number) =>
-        `${price.toFixed(2)} ₾`;
+        `${price.toLocaleString(locale, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        })} ₾`;
 
     const formatDate = (date: string) =>
-        new Date(date).toLocaleString("ka-GE", {
+        new Date(date).toLocaleString(locale, {
             year: "numeric",
             month: "long",
             day: "numeric",
@@ -57,10 +64,10 @@ function OrderDetailsPage() {
 
     const getStatusLabel = (status: Order["status"]) => {
         const statuses: Record<Order["status"], string> = {
-            pending_payment: "გადახდის მოლოდინში",
-            paid: "გადახდილია",
-            cancelled: "გაუქმებულია",
-            failed: "წარუმატებელი",
+            pending_payment: t("orderDetails.status.pending"),
+            paid: t("orderDetails.status.paid"),
+            cancelled: t("orderDetails.status.cancelled"),
+            failed: t("orderDetails.status.failed"),
         };
 
         return statuses[status] ?? status;
@@ -70,7 +77,7 @@ function OrderDetailsPage() {
         return (
             <main className="order-details-page">
                 <p className="order-details-message">
-                    შეკვეთის ინფორმაცია იტვირთება...
+                    {t("orderDetails.loading")}
                 </p>
             </main>
         );
@@ -80,11 +87,17 @@ function OrderDetailsPage() {
         return (
             <main className="order-details-page">
                 <div className="order-details-error">
-                    <h2>შეკვეთა ვერ მოიძებნა</h2>
-                    <p>{error || "მოთხოვნილი შეკვეთა არ არსებობს."}</p>
+                    <h2>{t("orderDetails.notFoundTitle")}</h2>
+                    <p>
+                        {error
+                            ? error.startsWith("orderDetails.")
+                                ? t(error)
+                                : error
+                            : t("orderDetails.notFoundDescription")}
+                    </p>
 
                     <Button onClick={() => navigate("/orders")}>
-                        შეკვეთების ისტორიაში დაბრუნება
+                        {t("orderDetails.backToOrders")}
                     </Button>
                 </div>
             </main>
@@ -95,8 +108,8 @@ function OrderDetailsPage() {
         <main className="order-details-page">
             <div className="order-details-heading">
                 <div>
-                    <h1>შეკვეთის დეტალები</h1>
-                    <p>შეკვეთის ნომერი: #{order.id}</p>
+                    <h1>{t("orderDetails.title")}</h1>
+                    <p>{t("orderDetails.orderNumber")}: #{order.id}</p>
                 </div>
 
                 <span className={`order-details-status status-${order.status}`}>
@@ -105,28 +118,20 @@ function OrderDetailsPage() {
             </div>
 
             <section className="order-details-section">
-                <h2>შეკვეთილი პროდუქტები</h2>
+                <h2>{t("orderDetails.orderedProducts")}</h2>
 
                 <div className="order-products">
                     {order.items.map((item) => (
-                        <article
-                            className="order-product"
-                            key={item.productId}
-                        >
-                            <img
-                                src={item.image}
-                                alt={item.title}
-                            />
+                        <article className="order-product" key={item.productId}>
+                            <img src={item.image} alt={item.title}/>
 
                             <div className="order-product-info">
                                 <h3>{item.title}</h3>
-                                <p>რაოდენობა: {item.qty}</p>
-                                <p>ერთეულის ფასი: {formatPrice(item.price)}</p>
+                                <p>{t("orderDetails.quantity")}: {item.qty}</p>
+                                <p>{t("orderDetails.unitPrice")}: {formatPrice(item.price)}</p>
                             </div>
 
-                            <strong>
-                                {formatPrice(item.lineTotal)}
-                            </strong>
+                            <strong>{formatPrice(item.lineTotal)}</strong>
                         </article>
                     ))}
                 </div>
@@ -134,47 +139,47 @@ function OrderDetailsPage() {
 
             <div className="order-details-grid">
                 <section className="order-details-section">
-                    <h2>მიწოდების ინფორმაცია</h2>
+                    <h2>{t("orderDetails.shippingInformation")}</h2>
 
                     <div className="order-info-list">
                         <p>
-                            <span>მიმღები:</span>
+                            <span>{t("orderDetails.recipient")}:</span>
                             {order.shipping.fullName}
                         </p>
                         <p>
-                            <span>ტელეფონი:</span>
+                            <span>{t("orderDetails.phone")}:</span>
                             {order.shipping.phone}
                         </p>
                         <p>
-                            <span>ქალაქი:</span>
+                            <span>{t("orderDetails.city")}:</span>
                             {order.shipping.city}
                         </p>
                         <p>
-                            <span>მისამართი:</span>
+                            <span>{t("orderDetails.address")}:</span>
                             {order.shipping.address}
                         </p>
                     </div>
                 </section>
 
                 <section className="order-details-section">
-                    <h2>შეკვეთის ინფორმაცია</h2>
+                    <h2>{t("orderDetails.orderInformation")}</h2>
 
                     <div className="order-info-list">
                         <p>
-                            <span>შეკვეთის თარიღი:</span>
+                            <span>{t("orderDetails.orderDate")}:</span>
                             {formatDate(order.createdAt)}
                         </p>
 
                         {order.paidAt && (
                             <p>
-                                <span>გადახდის თარიღი:</span>
+                                <span>{t("orderDetails.paymentDate")}:</span>
                                 {formatDate(order.paidAt)}
                             </p>
                         )}
 
                         {order.payment && (
                             <p>
-                                <span>გადახდის ბარათი:</span>
+                                <span>{t("orderDetails.paymentCard")}:</span>
                                 {order.payment.brand.toUpperCase()} **** {order.payment.last4}
                             </p>
                         )}
@@ -183,31 +188,31 @@ function OrderDetailsPage() {
             </div>
 
             <section className="order-details-section order-summary">
-                <h2>გადახდის შეჯამება</h2>
+                <h2>{t("orderDetails.paymentSummary")}</h2>
 
                 <div className="summary-row">
-                    <span>პროდუქტების ღირებულება</span>
+                    <span>{t("orderDetails.subtotal")}</span>
                     <span>{formatPrice(order.subtotal)}</span>
                 </div>
 
                 <div className="summary-row">
-                    <span>მიწოდება</span>
+                    <span>{t("orderDetails.shippingFee")}</span>
                     <span>{formatPrice(order.shippingFee)}</span>
                 </div>
 
                 <div className="summary-row summary-total">
-                    <span>სულ გადასახდელი</span>
+                    <span>{t("orderDetails.total")}</span>
                     <strong>{formatPrice(order.total)}</strong>
                 </div>
             </section>
 
             <div className="order-details-actions">
                 <Button onClick={() => navigate("/orders")}>
-                    შეკვეთების ისტორიაში დაბრუნება
+                    {t("orderDetails.backToOrders")}
                 </Button>
 
                 <Button onClick={() => navigate("/catalog")}>
-                    კატალოგში დაბრუნება
+                    {t("orderDetails.backToCatalog")}
                 </Button>
             </div>
         </main>
